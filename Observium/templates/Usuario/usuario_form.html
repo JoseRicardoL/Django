@@ -1,0 +1,83 @@
+{% extends "Base.html" %}
+{% block navbar %}
+<div class="navbar-custom-menu">
+  <ul class="nav navbar-nav">
+    <li class="dropdown user user-menu">
+      <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+        Bienvenido, {{ user.username }}
+      </a>
+      <ul class="dropdown-menu">
+        <li class="user-header">
+            <img src="{{ usuario.Imagen.url }}" class="img-circle user-image img-responsive" alt="User Image">
+          <p>
+                {{user.username}} - {{ usuario.Descripcion }}
+            <small>Miebro desde {{ user.date_joined }}</small>
+          </p>
+        </li>
+        <li class="user-footer">
+          <div class="pull-right">
+            <a href="{% url "Usuario:logout" %}" class="btn btn-default btn-flat">
+              logout
+            </a>
+          </div>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="#" data-toggle="control-sidebar"><i class="fa fa-gears"></i></a>
+    </li>
+  </ul>
+</div>
+{% endblock %}
+{% block userimage %}
+<div class="pull-left image">
+    <img src="{{ usuario.Imagen.url }}" class="img-circle user-image img-responsive" alt="User Image">
+</div>
+{% endblock %}
+{% block content %}
+<div class="container">
+  <h2>Editar informacion</h2>
+<div class="form ">
+  <div class="form col-md-12 ">
+    <img src="{{ usuario.Imagen.url }}" class="img-circle user-image center-block img-responsive" alt="User Image">
+    <br>
+  </div>
+  <div class="form col-xs-12 col-md-6 ">
+    <form  method="POST" class="well" enctype="multipart/form-data">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="user">
+      {{ formdos.as_p}}
+      <button type="submit" class="btn btn-default btn-block">Guardar</button>
+    </form>
+  </div>
+  <div class="form col-xs-12 col-md-6 ">
+    <form  method="POST" class="well" enctype="multipart/form-data">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="usuario">
+      <div class="form-group">
+        <label>Usuario</label>
+        <br>
+        {{ form.Usuario }}
+      </div>
+      <div class="form-group">
+        <label>Descripcion</label>
+        <br>
+        {{ form.Descripcion }}
+      </div>
+      <div class="form-group">
+        <label>Telefono</label>
+        <br>
+        {{ form.Telefono }}
+      </div>
+      <div class="form-group">
+        <label>Usuario</label>
+        <br>
+        {{ form.Imagen }}
+      </div>
+      <button type="submit" class="btn btn-default btn-block">Guardar</button>
+    </form>
+  </div>
+</div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,157 @@
+{% load staticfiles %}
+{% load thumbnail %}
+
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="icon" href="img/favicon.ico">
+
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <div id="head">
+    <title>{% block page_title %}{% endblock %}</title>
+  </div>
+  <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+  <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}" >
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.5.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/ionicons/2.0.1/css/ionicons.min.css">
+  <link rel="stylesheet" href="{% static 'css/AdminLTE.css' %}">
+  <link rel="stylesheet" href="{% static 'css/skin-blue.css' %}">
+  {% block list_css %}
+  {% endblock %}
+  {% block pre_js %}
+  {% endblock %}
+</head>
+<body class="hold-transition skin-blue sidebar-mini">
+  <div id="body" class="container-fluid">
+    <div class="wrapper">
+        <header class="main-header">
+          <a href=" {% url "Usuario:VistaUsuario" %} " class="logo">
+            <span class="logo-mini"><i class="fa fa-diamond" aria-hidden="true"></i></span>
+            <span class="logo-lg"><b>Observium</b>Beta</span>
+          </a>
+          <nav class="navbar navbar-static-top" role="navigation">
+            <a href="#" class="sidebar-toggle" data-toggle="offcanvas" role="button">
+              <span class="sr-only">Toggle navigation</span>
+            </a>
+            {% block navbar %}
+            {% endblock %}
+          </nav>
+        </header>
+        <aside class="main-sidebar">
+          <section class="sidebar">
+            <div class="user-panel">
+              {% block userimage %}
+              {% endblock %}
+              <div class="pull-left info">
+                <p>{{user.username}}</p>
+                <a href="#"><i class="fa fa-circle text-success"></i> Online</a>
+              </div>
+            </div>
+            <ul class="sidebar-menu">
+              <li class="header"><h3>Opciones</h3></li>
+              <li class="active"><a href="#"><i class="fa fa-home"></i> <span>Home</span></a></li>
+              <li><a href="#"><i class="fa fa-area-chart"></i> <span>Gaficas</span></a></li>
+              <li class="treeview">
+                <a href="#"><i class="fa fa-mobile"></i> <span>Dispositivos</span> <i class="fa fa-angle-left pull-right"></i></a>
+                <ul class="treeview-menu">
+                  {% for dispositivo in dispositivos %}
+                    {% if dispositivo.Usuario_Dispositivo_id == user.id %}
+                      <li><a href=" {% url "Dispositivo:IndividualDispositivo" dispositivo.id%} ">{{ dispositivo.NombreHost }}</a></li>
+                    {% endif %}
+                  {% endfor %}
+                </ul>
+              </li>
+            </ul>
+          </section>
+        </aside>
+        <div class="content-wrapper" >
+          <section class="content-header">
+            {% block contentheader %}
+            {% endblock %}
+          </section>
+          <section class="content ">
+            {% block content %}
+            {% endblock %}
+          </section>
+        </div>
+
+        <aside class="control-sidebar control-sidebar-dark">
+          <ul class="nav nav-tabs nav-justified control-sidebar-tabs">
+            <li class="active"><a href="#control-sidebar-home-tab" data-toggle="tab"><i class="fa fa-home"></i></a></li>
+          </ul>
+          <div class="tab-content">
+            <div class="tab-pane active" id="control-sidebar-home-tab">
+              <ul class="control-sidebar-menu">
+                <li>
+                  <a href=" {% url "Usuario:EditarUsuario" user.id %} ">
+                    <i class="menu-icon fa fa-user bg-green"></i>
+                    <div class="menu-info">
+                      <h4 class="control-sidebar-subheading">Editar perfil</h4>
+                      <p>ya sabes: nombre, contraseña, correo :D</p>
+                    </div>
+                  </a>
+                </li>
+              </ul>
+              <br>
+              <ul class="control-sidebar-menu">
+                <li>
+                  <a href=" {% url "Dispositivo:AgregarDispositivo" %} ">
+                    <i class="menu-icon fa fa-plus bg-green"></i>
+                    <div class="menu-info">
+                      <h4 class="control-sidebar-subheading">Agregar dispositivo</h4>
+                      <p>mas es mejor no?...</p>
+                    </div>
+                  </a>
+                </li>
+              </ul>
+              <br>
+
+              <ul class="control-sidebar-menu">
+                <li>
+                  <a href=" {% url "Dispositivo:VistaDispositivo" %} ">
+                    <i class="menu-icon fa fa-eye bg-blue"></i>
+                    <div class="menu-info">
+                      <h4 class="control-sidebar-subheading">Ver dispositivos</h4>
+                      <p>monitorea a tus esclavos... ve que hagan su trabajo y bien</p>
+                    </div>
+                    <ul class="treeview-menu">
+                      {% for dispositivo in dispositivos %}
+                        {% if dispositivo.Usuario_Dispositivo_id == user.id %}
+                          <li><a href=" {% url "Dispositivo:IndividualDispositivo" dispositivo.id%} ">{{ dispositivo.NombreHost }}</a></li>
+                        {% endif %}
+                      {% endfor %}
+                    </ul>
+                  </a>
+                </li>
+              </ul>
+              <br>
+              <ul class="control-sidebar-menu">
+                <li>
+                  <a href="{% url "Usuario:logout" %}">
+                    <i class="menu-icon fa fa-sign-out bg-red"></i>
+                    <div class="menu-info">
+                      <h4 class="control-sidebar-subheading">Salir</h4>
+                    </div>
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </aside>
+      <div class="control-sidebar-bg"></div>
+    </div>
+  </div>
+  <footer class="main-footer">
+    <div class="pull-right hidden-xs">
+      Administracion en servicios web
+    </div>
+    <strong>Copyright &copy; 2017 <a href="#">desarrollado por : Mario, Alejandro y Ricardo</a>.</strong> todos los derechos reservados.
+  </footer>
+  <script src="{% static 'js/jQuery-2.2.0.min.js' %}"></script>
+  <script src="{% static 'js/bootstrap.min.js' %}"></script>
+  <script src="{% static 'js/app.min.js' %}"></script>
+  {% block pos_js %}
+  {% endblock %}
+</body>
+</html>
