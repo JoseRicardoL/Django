@@ -98,7 +98,12 @@
   </div>
   <div class="row dispositivo">
     <h2>Graficas</h2>
-      <img src="trafico1.png" class=" user-image img-responsive">
-  </div>
+    <div class="col-sm-6">
+      {% for elemento in cadena %}
+      <h3>{{elemento.0}}</h3>
+      <img src="{{elemento.1}}" alt="">
+      {% endfor %}
+
+    </div>
 </div>
 {% endblock %}

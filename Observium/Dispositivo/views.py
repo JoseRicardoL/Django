@@ -6,13 +6,11 @@ from .models import Dispositivo
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.decorators import user_passes_test
-from ObserviumProblem.settings import BASE_DIR
+from rrdtool import ProgrammingError, OperationalError
 import rrdtool
-import pygeoip
-import os.path
-import thread
 import time
-import sys
+import os
+import thread
 from pysnmp.hlapi import (getCmd,
                           SnmpEngine,
                           CommunityData,
@@ -134,22 +132,68 @@ def sistemaop(lista):
     return tiposistema
 
 
+def creardb(nombrecad, dispositivo):
+        ret = rrdtool.create(
+            str(nombrecad), str("--start"),
+            str('N'), str("--step"), str('60'),
+            str("DS:inoctets:COUNTER:600:U:U"),
+            str("DS:outoctets:COUNTER:600:U:U"),
+            str("RRA:AVERAGE:0.5:6:700"),
+            str("RRA:AVERAGE:0.5:1:600"))
+        if ret:
+            print rrdtool.error()
+
+
+def muchosupdatedb(listahilos):
+    total_input_traffic = 0
+    total_output_traffic = 0
+    while 1:
+        for hilos in listahilos:
+            dispositivo = Dispositivo.objects.get(id=hilos[0])
+            total_input_traffic = int(
+                consultaunicaSNMP(dispositivo, str(hilos[2])))
+            total_output_traffic = int(
+                consultaunicaSNMP(dispositivo, str(hilos[3])))
+            valor = str("N:" + str(total_input_traffic) + ':' + str(
+                total_output_traffic))
+            print valor
+            cadena1 = str(str(hilos[1])+str(dispositivo.id)+".rrd")
+            rrdtool.update(cadena1, valor)
+            rrdtool.dump(str(str(hilos[1])+str(dispositivo.id)+".rrd"),
+                         str(str(hilos[1])+str(dispositivo.id)+".xml"))
+            time.sleep(1)
+
+
+def muchasimagenes(listaimagenes):
+    tiempo_actual = int(time.time())
+    tiempo = tiempo_actual-300
+    while 1:
+        for imagenalv in listaimagenes:
+            dispositivo = Dispositivo.objects.get(id=imagenalv[0])
+            cad = str(imagenalv[1])+str(dispositivo.id)
+            try:
+                ret = rrdtool.graph(
+                    str("media/"+str(cad)+".png"),
+                    str("--start"), str(tiempo),
+                    str("--vertical-label=Bytes/s"),
+                    str("DEF:inoctets="+str(
+                        str(cad)+".rrd")+":inoctets:AVERAGE"),
+                    str("DEF:outoctets="+str(
+                        str(cad)+".rrd")+":outoctets:AVERAGE"),
+                    str("AREA:inoctets#00FF00:In "+str(imagenalv[1])),
+                    str("LINE1:outoctets#0000FF:Out "+str(imagenalv[1])+"\r"))
+                print '***sigo vivo : '+str(dispositivo.Comunidad)+str(ret)
+            except ProgrammingError:
+                print "Oops!  That was no valid number.  Try again..."
+            except OperationalError:
+                print "Oops!  That was no valid number.  Try again..."
+            except Exception:
+                print "Oops!  That was no valid number.  Try again..."
+        time.sleep(30)
+
+
 def staff_required(login_url=None):
     return user_passes_test(lambda u: u.is_staff, login_url=login_url)
-
-
-gloc = pygeoip.GeoIP(BASE_DIR+'/database/GeoLiteCity.dat')
-
-
-def listar_posiciones(dispositivos):
-    lista_posiciones = ()
-    for dispositivo in dispositivos:
-        addr_info = gloc.record_by_name(dispositivo.Ip_publica)
-        longitude = addr_info['longitude']
-        latitude = addr_info['latitude']
-        data = "{lat:"+str(latitude)+", lng: "+str(longitude)+"}"
-        lista_posiciones.append(data)
-    return lista_posiciones
 
 
 def generartabla(listawalk):
@@ -165,82 +209,34 @@ def generartabla(listawalk):
     return superlista
 
 
-def creardb(dispositivo):
-    ret = rrdtool.create(str("trafico"+str(dispositivo.id)+".rrd"),
-                         str("--start"), str('N'), str("--step"), str('60'),
-                         str("DS:inoctets:COUNTER:600:U:U"),
-                         str("DS:outoctets:COUNTER:600:U:U"),
-                         str("RRA:AVERAGE:0.5:6:700"),
-                         str("RRA:AVERAGE:0.5:1:600"))
-    if ret:
-        print '************'
-        print rrdtool.error()
-        print '************'
-
-
-def updatedb(dispositivo):
-    total_input_traffic = 0
-    total_output_traffic = 0
-    while 1:
-        total_input_traffic = int(
-            consultaunicaSNMP(dispositivo, '1.3.6.1.2.1.2.2.1.10.3'))
-        total_output_traffic = int(
-            consultaunicaSNMP(dispositivo, '1.3.6.1.2.1.2.2.1.16.3'))
-        valor = str("N:" + str(total_input_traffic) + ':' + str(
-            total_output_traffic))
-        print valor
-        cadena1 = str("trafico"+str(dispositivo.id)+".rrd")
-        rrdtool.update(cadena1, valor)
-        rrdtool.dump(str("trafico"+str(dispositivo.id)+".rrd"),
-                     str("trafico"+str(dispositivo.id)+".xml"))
-        time.sleep(1)
-
-
-def imagen(dispositivo):
-    tiempo_actual = int(time.time())
-    tiempo = tiempo_actual-300
-    while 1:
-        try:
-            ret = rrdtool.graph(
-                str("trafico"+str(dispositivo.id)+".png"), str("--start"),
-                str(tiempo),
-                str("--vertical-label=Bytes/s"),
-                str("DEF:inoctets="+str("trafico"+str(dispositivo.id)+""
-                                        ".rrd")+":inoctets:AVERAGE"),
-                str("DEF:outoctets="+str("trafico"+str(dispositivo.id)+""
-                                         ".rrd")+":outoctets:AVERAGE"),
-                str("AREA:inoctets#00FF00:In traffic"),
-                str("LINE1:outoctets#0000FF:Out traffic\r"))
-            print ('**********************'+str(ret))
-            time.sleep(30)
-            print '***sigo vivo : '+str(dispositivo.Comunidad)
-        except ValueError:
-            print "Oops!  That was no valid number.  Try again..."
-
-
-dispositivo = Dispositivo.objects.all()
-for elemento in dispositivo:
-    if consultaunicaSNMP(elemento, '1.3.6.1.2.1.2.2.1.16.3') != 0:
-        if os.path.isfile(str(str(elemento.id)+'.rrd')):
-            print '****** si hay'
-        else:
-            creardb(elemento)
-            print '****** no hay'
-for elemento in dispositivo:
-    if consultaunicaSNMP(elemento, '1.3.6.1.2.1.2.2.1.16.3') != 0:
-        thread.start_new_thread(updatedb, (elemento,))
-        thread.start_new_thread(imagen, (elemento,))
-
-
 @staff_required(login_url="/")
 @login_required(login_url='/')
 def VistaDispositivo(request):
     listanumerointerfaz = []
     listawalk = []
+    listahilos = []
+    listaimagenes = []
     lista = []
     dias = []
-    dispositivo = Dispositivo.objects.all()
-    usuario = Usuario.objects.all()
+    usuario = Usuario.objects.filter(Usuario_id=request.user.id)
+    dispositivo = Dispositivo.objects.filter(
+        Usuario_Dispositivo_id=request.user.id)
+    monitoreosSNMP = [['trafico',
+                       '1.3.6.1.2.1.2.2.1.10.3',
+                       '1.3.6.1.2.1.2.2.1.16.3',
+                       "Tráfico de interfaz"],
+                      ['segmentostcp',
+                       '1.3.6.1.2.1.6.10.0',
+                       '1.3.6.1.2.1.6.11.0',
+                       "Segmentos TCP"],
+                      ['datagramaUDP',
+                       '1.3.6.1.2.1.7.1.0',
+                       '1.3.6.1.2.1.7.4.0',
+                       "Datagramas UDP"],
+                      ['paquetes',
+                       '1.3.6.1.2.1.11.1.0',
+                       '1.3.6.1.2.1.11.2.0',
+                       "Paquetes SNMP"]]
     lista_oid = ['1.3.6.1.2.1.1.1.0',
                  '1.3.6.1.2.1.1.3.0',
                  '1.3.6.1.2.1.1.5.0',
@@ -251,15 +247,33 @@ def VistaDispositivo(request):
                  '1.3.6.1.2.1.2.2.1.16.3']
     respuesta = consultaSNMP(dispositivo, lista_oid)
     for elemento in respuesta:
-        if elemento[1][1] != 'error':
+        if elemento[1][1] == 'error':
+            dias.append([elemento[0], 'no se puede calcular'])
+        else:
             trans = int(elemento[1][1])
             hor = (int(trans/3600))
             minu = int((trans-(hor*3600))/60)
             seg = trans-((hor*3600)+(minu*60))
             dias.append([elemento[0],
                          (str(hor)+"h "+str(minu)+"m "+str(seg)+"s")])
-        else:
-            dias.append([elemento[0], 'no se puede calcular'])
+            for tipomonitoreo in monitoreosSNMP:
+                nombrecad = str(str(tipomonitoreo[0])+str(elemento[0])+'.rrd')
+                if os.path.isfile(nombrecad):
+                    print '****** si hay'
+                else:
+                    creardb(nombrecad, elemento)
+                    print '****** no hay'
+                nombreimagen = str(
+                    "media/"+str(tipomonitoreo[0])+str(elemento[0])+'.png')
+                if os.path.isfile(nombreimagen):
+                    print ("Ya existe imagen")
+                else:
+                    listahilos.append([elemento[0],
+                                       tipomonitoreo[0],
+                                       tipomonitoreo[1], tipomonitoreo[2]])
+                    listaimagenes.append([elemento[0], tipomonitoreo[0]])
+    thread.start_new_thread(muchosupdatedb, (listahilos,))
+    thread.start_new_thread(muchasimagenes, (listaimagenes,))
     for elemento in respuesta:
         lista.append([elemento[0], elemento[1][0]])
     sis = sistemaop(lista)
@@ -283,13 +297,33 @@ def VistaDispositivo(request):
 @staff_required(login_url="/")
 @login_required(login_url='/')
 def IndividualDispositivo(request, Id):
-    usuario = Usuario.objects.all()
-    dispositivos = Dispositivo.objects.all()
+    usuario = Usuario.objects.filter(Usuario_id=request.user.id)
+    dispositivos = Dispositivo.objects.filter(
+        Usuario_Dispositivo_id=request.user.id)
     lista_dispositivo = []
+    listahilos = []
+    listaimagenes = []
     lista = []
     dias = []
+    cadena = []
     dispositivo = Dispositivo.objects.get(id=Id)
     lista_dispositivo.append(dispositivo)
+    monitoreosSNMP = [['trafico',
+                       '1.3.6.1.2.1.2.2.1.10.3',
+                       '1.3.6.1.2.1.2.2.1.16.3',
+                       "Tráfico de interfaz"],
+                      ['segmentostcp',
+                       '1.3.6.1.2.1.6.10.0',
+                       '1.3.6.1.2.1.6.11.0',
+                       "Segmentos TCP"],
+                      ['datagramaUDP',
+                       '1.3.6.1.2.1.7.1.0',
+                       '1.3.6.1.2.1.7.4.0',
+                       "Datagramas UDP"],
+                      ['paquetes',
+                       '1.3.6.1.2.1.11.1.0',
+                       '1.3.6.1.2.1.11.2.0',
+                       "Paquetes SNMP"]]
     lista_oid = ['1.3.6.1.2.1.1.1.0',
                  '1.3.6.1.2.1.1.3.0',
                  '1.3.6.1.2.1.1.5.0',
@@ -303,21 +337,43 @@ def IndividualDispositivo(request, Id):
         lista.append([elemento[0], elemento[1][0]])
     sis = sistemaop(lista)
     for elemento in respuesta:
-        if elemento[1][1] != 'error':
+        if elemento[1][1] == 'error':
+            dias.append([elemento[0], 'no se puede calcular'])
+        else:
             trans = int(elemento[1][1])
             hor = (int(trans/3600))
             minu = int((trans-(hor*3600))/60)
             seg = trans-((hor*3600)+(minu*60))
             dias.append([elemento[0],
                          (str(hor)+"h "+str(minu)+"m "+str(seg)+"s")])
-        else:
-            dias.append([elemento[0], 'no se puede calcular'])
+            for tipomonitoreo in monitoreosSNMP:
+                nombrecad = str(str(tipomonitoreo[0])+str(elemento[0])+'.rrd')
+                if os.path.isfile(nombrecad):
+                    print '****** si hay'
+                else:
+                    creardb(nombrecad, elemento)
+                    print '****** no hay'
+                nombreimagen = str(
+                    "media/"+str(tipomonitoreo[0])+str(elemento[0])+'.png')
+                if os.path.isfile(nombreimagen):
+                    print ("Ya existe imagen")
+                else:
+                    listahilos.append([elemento[0],
+                                       tipomonitoreo[0],
+                                       tipomonitoreo[1], tipomonitoreo[2]])
+                    listaimagenes.append([elemento[0], tipomonitoreo[0]])
+    thread.start_new_thread(muchosupdatedb, (listahilos,))
+    thread.start_new_thread(muchasimagenes, (listaimagenes,))
+    for elemento in monitoreosSNMP:
+        cadena.append([elemento[3], str(
+            "/media/"+str(elemento[0])+str(Id)+'.png')])
     contexto = {'usuarios': usuario,
                 'dispositivos': dispositivos,
                 'dispositivo': dispositivo,
                 'respuesta': respuesta,
                 'lista': sis,
-                'dias': dias}
+                'dias': dias,
+                'cadena': cadena}
     return render(request,
                   'Dispositivo/dispositivo_individual.html',
                   contexto)
@@ -326,8 +382,9 @@ def IndividualDispositivo(request, Id):
 @staff_required(login_url="/")
 @login_required(login_url='/')
 def AgregarDispositivo(request):
-    usuario = Usuario.objects.all()
-    dispositivo = Dispositivo.objects.all()
+    usuario = Usuario.objects.filter(Usuario_id=request.user.id)
+    dispositivo = Dispositivo.objects.filter(
+        Usuario_Dispositivo_id=request.user.id)
     if request.method == 'POST':
         form = FormDispositivo(request.POST)
         if form.is_valid():
@@ -346,6 +403,7 @@ def AgregarDispositivo(request):
 @staff_required(login_url="/")
 @login_required(login_url='/')
 def EditarDispositivo(request, Id):
+    usuario = Usuario.objects.filter(Usuario_id=request.user.id)
     dispositivo = Dispositivo.objects.get(id=Id)
     if request.method == 'GET':
         form = FormDispositivo(instance=dispositivo)
@@ -359,14 +417,15 @@ def EditarDispositivo(request, Id):
     return render(request,
                   'Dispositivo/dispositivo_form.html',
                   {'form': form,
-                   'dispositivo': dispositivo})
+                   'dispositivo': dispositivo,
+                   'usuarios': usuario})
 
 
 @staff_required(login_url="/")
 @login_required(login_url='/')
 def EliminarDispositivo(request, Id):
     dispositivo = Dispositivo.objects.get(id=Id)
-    usuario = Usuario.objects.all()
+    usuario = Usuario.objects.filter(Usuario_id=request.user.id)
 
     if request.method == 'POST':
         dispositivo.delete()
