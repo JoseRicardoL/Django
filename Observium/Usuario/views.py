@@ -5,17 +5,18 @@ from django.shortcuts import render, redirect
 from .forms import FormUsuario, FormUser
 from .models import Usuario
 from Dispositivo.models import Dispositivo
-from django.contrib.auth import authenticate, login
+from Dispositivo.views import (monitoreosSNMP,
+                               muchasimagenes,
+                               creardb,
+                               muchosupdatedb,
+                               staff_required,
+                               walk)
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.decorators import user_passes_test
 from ObserviumProblem.settings import BASE_DIR
-from rrdtool import ProgrammingError, OperationalError
-import rrdtool
-import random
 import pygeoip
 import thread
-import time
 import os
 from pysnmp.hlapi import (getCmd,
                           SnmpEngine,
@@ -23,55 +24,9 @@ from pysnmp.hlapi import (getCmd,
                           UdpTransportTarget,
                           ContextData,
                           ObjectType,
-                          ObjectIdentity,
-                          nextCmd)
+                          ObjectIdentity)
 
 gloc = pygeoip.GeoIP(BASE_DIR+'/database/GeoLiteCity.dat')
-
-
-def staff_required(login_url=None):
-    return user_passes_test(lambda u: u.is_staff, login_url=login_url)
-
-
-def walk(dispositivos, oid, numerointerfaz):
-    superlista = []
-    for numero in numerointerfaz:
-        for dispositivo in dispositivos:
-            if numero[0] == dispositivo.id:
-                lista = []
-                sublista = []
-                for (errorIndication,
-                     errorStatus,
-                     errorIndex,
-                     varBinds) in nextCmd(
-                         SnmpEngine(),
-                         CommunityData(dispositivo.Comunidad),
-                         UdpTransportTarget((dispositivo.Ip, 161)),
-                         ContextData(),
-                         ObjectType(ObjectIdentity(oid))):
-                            if errorIndication:
-                                print(errorIndication)
-                                break
-                            elif errorStatus:
-                                print('%s at %s' % (errorStatus.prettyPrint(),
-                                                    errorIndex and varBinds[
-                                                        int(errorIndex) - 1]
-                                                    [0] or '?'))
-                                break
-                            else:
-                                for dato in varBinds:
-                                    if oid == str(dato[0])[:len(oid)]:
-                                        sublista.append(str(dato[1]))
-                                        if len(sublista) == int(numero[1]):
-                                            lista.append(sublista)
-                                            sublista = []
-                                    else:
-                                        varBinds = -1
-                                        break
-                                if varBinds == -1:
-                                    break
-                superlista.append([dispositivo.id, lista])
-    return superlista
 
 
 def consultaSNMP(dispositivos, oid):
@@ -102,28 +57,6 @@ def consultaSNMP(dispositivos, oid):
                 resultado.append(str(varBind[1]))
         lista.append([dispositivo.id, resultado])
     return lista
-
-
-def consultaunicaSNMP(dispositivo, oid):
-    resultado = 0
-    errorIndication, errorStatus, errorIndex, varBinds = next(
-        getCmd(SnmpEngine(),
-               CommunityData(dispositivo.Comunidad),
-               UdpTransportTarget((dispositivo.Ip, 161)),
-               ContextData(),
-               ObjectType(ObjectIdentity(oid))))
-    if errorIndication:
-        print(errorIndication)
-        resultado = 0
-    elif errorStatus:
-        print('%s at %s' % (errorStatus.prettyPrint(),
-                            errorIndex and varBinds[
-                                int(errorIndex) - 1][0] or '?'))
-        resultado = 0
-    else:
-        for varBind in varBinds:
-            resultado = int(str(varBind[1]))
-    return resultado
 
 
 def sistemaop(lista):
@@ -158,92 +91,6 @@ def listar_posiciones(dispositivos):
     return lista_posiciones
 
 
-def creardb(nombrecad, dispositivo):
-        ret = rrdtool.create(
-            str(nombrecad), str("--start"),
-            str('N'), str("--step"), str('60'),
-            str("DS:inoctets:COUNTER:600:U:U"),
-            str("DS:outoctets:COUNTER:600:U:U"),
-            str("RRA:AVERAGE:0.5:6:700"),
-            str("RRA:AVERAGE:0.5:1:600"))
-        if ret:
-            print rrdtool.error()
-
-
-def muchosupdatedb(listahilos):
-    total_input_traffic = 0
-    total_output_traffic = 0
-    while 1:
-        for hilos in listahilos:
-            dispositivo = Dispositivo.objects.get(id=hilos[0])
-            total_input_traffic = int(
-                consultaunicaSNMP(dispositivo, str(hilos[2])))
-            total_output_traffic = int(
-                consultaunicaSNMP(dispositivo, str(hilos[3])))
-            valor = str("N:" + str(total_input_traffic) + ':' + str(
-                total_output_traffic))
-            print valor
-            cadena1 = str(str(hilos[1])+str(dispositivo.id)+".rrd")
-            rrdtool.update(cadena1, valor)
-            rrdtool.dump(str(str(hilos[1])+str(dispositivo.id)+".rrd"),
-                         str(str(hilos[1])+str(dispositivo.id)+".xml"))
-            time.sleep(1)
-
-
-def muchasimagenes(listaimagenes):
-    tiempo_actual = int(time.time())
-    tiempo = tiempo_actual-300
-    while 1:
-        for imagenalv in listaimagenes:
-            dispositivo = Dispositivo.objects.get(id=imagenalv[0])
-            cad = str(imagenalv[1])+str(dispositivo.id)
-            try:
-                ret = rrdtool.graph(
-                    str("media/"+str(cad)+".png"),
-                    str("--start"), str(tiempo),
-                    str("--vertical-label=Bytes/s"),
-                    str("DEF:inoctets="+str(
-                        str(cad)+".rrd")+":inoctets:AVERAGE"),
-                    str("DEF:outoctets="+str(
-                        str(cad)+".rrd")+":outoctets:AVERAGE"),
-                    str("AREA:inoctets#00FF00:In "+str(imagenalv[1])),
-                    str("LINE1:outoctets#0000FF:Out "+str(imagenalv[1])+"\r"))
-                print '***sigo vivo : '+str(dispositivo.Comunidad)+str(ret)
-            except ProgrammingError:
-                print "Oops!  That was no valid number.  Try again..."
-            except OperationalError:
-                print "Oops!  That was no valid number.  Try again..."
-            except Exception:
-                print "Oops!  That was no valid number.  Try again..."
-        time.sleep(30)
-
-
-def imagen(dispositivoid, nombregraf):
-    dispositivo = Dispositivo.objects.get(id=dispositivoid)
-    tiempo_actual = int(time.time())
-    tiempo = tiempo_actual-300
-    cad = str(nombregraf)+str(dispositivo.id)
-    while 1:
-        try:
-            ret = rrdtool.graph(
-                str("media/"+str(cad)+".png"),
-                str("--start"), str(tiempo),
-                str("--vertical-label=Bytes/s"),
-                str("DEF:inoctets="+str(str(cad)+".rrd")+":inoctets:AVERAGE"),
-                str("DEF:outoctets="+str(
-                    str(cad)+".rrd")+":outoctets:AVERAGE"),
-                str("AREA:inoctets#00FF00:In "+str(nombregraf)),
-                str("LINE1:outoctets#0000FF:Out "+str(nombregraf)+"\r"))
-            time.sleep(30+int(random.randrange(10)))
-            print '***sigo vivo : '+str(dispositivo.Comunidad)+str(ret)
-        except ProgrammingError:
-            print "Oops!  That was no valid number.  Try again..."
-        except OperationalError:
-            print "Oops!  That was no valid number.  Try again..."
-        except Exception:
-            print "Oops!  That was no valid number.  Try again..."
-
-
 @staff_required(login_url="/")
 @login_required(login_url='/')
 def VistaUsuario(request):
@@ -253,22 +100,6 @@ def VistaUsuario(request):
     listahilos = []
     listaimagenes = []
     listawalk = []
-    monitoreosSNMP = [['trafico',
-                       '1.3.6.1.2.1.2.2.1.10.3',
-                       '1.3.6.1.2.1.2.2.1.16.3',
-                       "Tráfico de interfaz"],
-                      ['segmentostcp',
-                       '1.3.6.1.2.1.6.10.0',
-                       '1.3.6.1.2.1.6.11.0',
-                       "Segmentos TCP"],
-                      ['datagramaUDP',
-                       '1.3.6.1.2.1.7.1.0',
-                       '1.3.6.1.2.1.7.4.0',
-                       "Datagramas UDP"],
-                      ['paquetes',
-                       '1.3.6.1.2.1.11.1.0',
-                       '1.3.6.1.2.1.11.2.0',
-                       "Paquetes SNMP"]]
     lista_oid = ['1.3.6.1.2.1.1.1.0',
                  '1.3.6.1.2.1.2.1.0']
     form = FormUsuario()
@@ -306,7 +137,7 @@ def VistaUsuario(request):
             mostrar[0] = 1
     listawalk = walk(dispositivo, '1.3.6.1.2.1.2.2.1', listanumerointerfaz)
     for elemento in listawalk:
-        for puerto in elemento[1][7]:
+        for puerto in elemento[2][7]:
             if puerto == '1':
                 puertos[0] += 1
                 puertos[1] += 1
@@ -375,3 +206,22 @@ def LoginUsuario(request):
             return redirect('Usuario:VistaUsuario')
     context = {}
     return render(request, 'Usuario/login.html', context)
+
+
+def logout_view(request):
+    dispositivos = Dispositivo.objects.filter(
+        Usuario_Dispositivo_id=request.user.id)
+    for dispositivo in dispositivos:
+        for tipomonitoreo in monitoreosSNMP:
+            nombrecad = str(str(tipomonitoreo[0])+str(dispositivo.id)+'.rrd')
+            if os.path.isfile(nombrecad):
+                os.remove(nombrecad)
+            nombrexml = str(str(tipomonitoreo[0])+str(dispositivo.id)+'.xml')
+            if os.path.isfile(nombrexml):
+                os.remove(nombrexml)
+            nombreimagen = str(
+                "media/"+str(tipomonitoreo[0])+str(dispositivo.id)+'.png')
+            if os.path.isfile(nombreimagen):
+                os.remove(nombreimagen)
+    logout(request)
+    return redirect('Usuario:LoginUsuario')

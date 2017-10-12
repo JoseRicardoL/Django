@@ -1,6 +1,5 @@
 from django.conf.urls import url
 from . import views
-from django.contrib.auth import views as auth_views
 
 urlpatterns = [
 
@@ -8,7 +7,8 @@ urlpatterns = [
         views.LoginUsuario,
         name='LoginUsuario'),
 
-    url(r'^logout$', auth_views.logout, {'next_page': '/'},
+    url(r'^logout$',
+        views.logout_view,
         name="logout"),
 
     url(r'^Modulo_Usuario$',

@@ -20,40 +20,32 @@ from pysnmp.hlapi import (getCmd,
                           ObjectIdentity,
                           nextCmd)
 
+monitoreosSNMP = [['trafico',
+                   '1.3.6.1.2.1.2.2.1.10.3',
+                   '1.3.6.1.2.1.2.2.1.16.3',
+                   "Tráfico de interfaz"],
+                  ['segmentostcp',
+                   '1.3.6.1.2.1.6.10.0',
+                   '1.3.6.1.2.1.6.11.0',
+                   "Segmentos TCP"],
+                  ['datagramaUDP',
+                   '1.3.6.1.2.1.7.1.0',
+                   '1.3.6.1.2.1.7.4.0',
+                   "Datagramas UDP"],
+                  ['paquetes',
+                   '1.3.6.1.2.1.11.1.0',
+                   '1.3.6.1.2.1.11.2.0',
+                   "Paquetes SNMP"]]
 
-def consultaSNMP(dispositivos, oid):
+
+def staff_required(login_url=None):
+    return user_passes_test(lambda u: u.is_staff, login_url=login_url)
+
+
+def tuplaoid(oid):
     lista = []
-    for dispositivo in dispositivos:
-        resultado = []
-        errorIndication, errorStatus, errorIndex, varBinds = next(
-            getCmd(SnmpEngine(),
-                   CommunityData(dispositivo.Comunidad),
-                   UdpTransportTarget((dispositivo.Ip, 161)),
-                   ContextData(),
-                   ObjectType(ObjectIdentity(oid[0])),
-                   ObjectType(ObjectIdentity(oid[1])),
-                   ObjectType(ObjectIdentity(oid[2])),
-                   ObjectType(ObjectIdentity(oid[3])),
-                   ObjectType(ObjectIdentity(oid[4])),
-                   ObjectType(ObjectIdentity(oid[5])),
-                   ObjectType(ObjectIdentity(oid[6])),
-                   ObjectType(ObjectIdentity(oid[7])))
-        )
-
-        if errorIndication:
-            print(errorIndication)
-            for elemento in oid:
-                resultado.append('error')
-        elif errorStatus:
-            print('%s at %s' % (errorStatus.prettyPrint(),
-                                errorIndex and varBinds[
-                                    int(errorIndex) - 1][0] or '?'))
-            for elemento in oid:
-                resultado.append('error')
-        else:
-            for varBind in varBinds:
-                resultado.append(str(varBind[1]))
-        lista.append([dispositivo.id, resultado])
+    for elemento in oid:
+        lista.append(ObjectType(ObjectIdentity(elemento)))
     return lista
 
 
@@ -98,6 +90,42 @@ def walk(dispositivos, oid, numerointerfaz):
     return superlista
 
 
+def consultaSNMP(dispositivos, oid):
+    lista = []
+    for dispositivo in dispositivos:
+        resultado = []
+        errorIndication, errorStatus, errorIndex, varBinds = next(
+            getCmd(SnmpEngine(),
+                   CommunityData(dispositivo.Comunidad),
+                   UdpTransportTarget((dispositivo.Ip, 161)),
+                   ContextData(),
+                   ObjectType(ObjectIdentity(oid[0])),
+                   ObjectType(ObjectIdentity(oid[1])),
+                   ObjectType(ObjectIdentity(oid[2])),
+                   ObjectType(ObjectIdentity(oid[3])),
+                   ObjectType(ObjectIdentity(oid[4])),
+                   ObjectType(ObjectIdentity(oid[5])),
+                   ObjectType(ObjectIdentity(oid[6])),
+                   ObjectType(ObjectIdentity(oid[7])))
+        )
+
+        if errorIndication:
+            print(errorIndication)
+            for elemento in oid:
+                resultado.append('error')
+        elif errorStatus:
+            print('%s at %s' % (errorStatus.prettyPrint(),
+                                errorIndex and varBinds[
+                                    int(errorIndex) - 1][0] or '?'))
+            for elemento in oid:
+                resultado.append('error')
+        else:
+            for varBind in varBinds:
+                resultado.append(str(varBind[1]))
+        lista.append([dispositivo.id, resultado])
+    return lista
+
+
 def consultaunicaSNMP(dispositivo, oid):
     resultado = 0
     errorIndication, errorStatus, errorIndex, varBinds = next(
@@ -118,18 +146,6 @@ def consultaunicaSNMP(dispositivo, oid):
         for varBind in varBinds:
             resultado = int(str(varBind[1]))
     return resultado
-
-
-def sistemaop(lista):
-    tiposistema = []
-    for elemento in lista:
-        if "Linux" in elemento[1]:
-            tiposistema.append([elemento[0], "Linux"])
-        elif "Windows" in elemento[1]:
-            tiposistema.append([elemento[0], "Windows"])
-        else:
-            tiposistema.append([elemento[0], "error"])
-    return tiposistema
 
 
 def creardb(nombrecad, dispositivo):
@@ -192,8 +208,16 @@ def muchasimagenes(listaimagenes):
         time.sleep(30)
 
 
-def staff_required(login_url=None):
-    return user_passes_test(lambda u: u.is_staff, login_url=login_url)
+def sistemaop(lista):
+    tiposistema = []
+    for elemento in lista:
+        if "Linux" in elemento[1]:
+            tiposistema.append([elemento[0], "Linux"])
+        elif "Windows" in elemento[1]:
+            tiposistema.append([elemento[0], "Windows"])
+        else:
+            tiposistema.append([elemento[0], "error"])
+    return tiposistema
 
 
 def generartabla(listawalk):
@@ -221,22 +245,6 @@ def VistaDispositivo(request):
     usuario = Usuario.objects.filter(Usuario_id=request.user.id)
     dispositivo = Dispositivo.objects.filter(
         Usuario_Dispositivo_id=request.user.id)
-    monitoreosSNMP = [['trafico',
-                       '1.3.6.1.2.1.2.2.1.10.3',
-                       '1.3.6.1.2.1.2.2.1.16.3',
-                       "Tráfico de interfaz"],
-                      ['segmentostcp',
-                       '1.3.6.1.2.1.6.10.0',
-                       '1.3.6.1.2.1.6.11.0',
-                       "Segmentos TCP"],
-                      ['datagramaUDP',
-                       '1.3.6.1.2.1.7.1.0',
-                       '1.3.6.1.2.1.7.4.0',
-                       "Datagramas UDP"],
-                      ['paquetes',
-                       '1.3.6.1.2.1.11.1.0',
-                       '1.3.6.1.2.1.11.2.0',
-                       "Paquetes SNMP"]]
     lista_oid = ['1.3.6.1.2.1.1.1.0',
                  '1.3.6.1.2.1.1.3.0',
                  '1.3.6.1.2.1.1.5.0',
@@ -308,22 +316,6 @@ def IndividualDispositivo(request, Id):
     cadena = []
     dispositivo = Dispositivo.objects.get(id=Id)
     lista_dispositivo.append(dispositivo)
-    monitoreosSNMP = [['trafico',
-                       '1.3.6.1.2.1.2.2.1.10.3',
-                       '1.3.6.1.2.1.2.2.1.16.3',
-                       "Tráfico de interfaz"],
-                      ['segmentostcp',
-                       '1.3.6.1.2.1.6.10.0',
-                       '1.3.6.1.2.1.6.11.0',
-                       "Segmentos TCP"],
-                      ['datagramaUDP',
-                       '1.3.6.1.2.1.7.1.0',
-                       '1.3.6.1.2.1.7.4.0',
-                       "Datagramas UDP"],
-                      ['paquetes',
-                       '1.3.6.1.2.1.11.1.0',
-                       '1.3.6.1.2.1.11.2.0',
-                       "Paquetes SNMP"]]
     lista_oid = ['1.3.6.1.2.1.1.1.0',
                  '1.3.6.1.2.1.1.3.0',
                  '1.3.6.1.2.1.1.5.0',
