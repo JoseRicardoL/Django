@@ -1,0 +1,165 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Tienda Virtual | Administrador</title>
+    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+    <script src="http://cdn.ckeditor.com/4.6.1/standard/ckeditor.js"></script>
+  </head>
+  <body>
+    <nav class="navbar navbar-default">
+      <div class="container">
+        <div class="navbar-header">
+          <a class="navbar-brand" href="#">Administrador</a>
+        </div>
+          <ul class="nav navbar-nav navbar-right">
+            <li class="current"><a href="{% url 'Producto:ProductoList' %}">Home</a></li>
+            <li><a href="#">Welcome, {{ user.username }}</a></li>
+            <li><a href="{% url "Administrador:logout" %}">logout</a></li>
+          </ul>
+      </div>
+    </nav>
+
+    <header id="header">
+      <div class="container">
+        <div class="row">
+          <div class="col-md-10">
+            <h1><span class="glyphicon glyphicon-cog" aria-hidden="true"></span> Control de Administradores</small></h1>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <section id="breadcrumb">
+      <div class="container">
+        <ol class="breadcrumb">
+          <li class="active">CRUD</li>
+        </ol>
+      </div>
+    </section>
+
+    <section id="main">
+      <div class="container">
+        <div class="row">
+          <div class="col-md-4">
+            <div class="list-group">
+              <a class="list-group-item active main-color-bg">
+                 Modulos
+              </a>
+              <a href="{% url 'Administrador:AdministradorVista'%}" class="list-group-item">Administradores </a>
+              <a href="{% url 'Administrador:ProductoVista'%}" class="list-group-item">Productos </a>
+              <a href="{% url 'Administrador:CategoriaVista'%}"class="list-group-item">Categorias </a>
+              <a href="{% url 'Administrador:MetodoDePagoVista'%}"class="list-group-item">Metodos de pago </a>
+            </div>
+
+            <div class="list-group">
+              <a class="list-group-item active main-color-bg">
+                 Dar de alta a un Administrador
+              </a>
+
+              <form id="login list-group-item" method="POST" class="well">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="user">
+                <div class="form-group">
+                    <label>Usuario</label>
+                    <input type="text" name="username" class="form-control" >
+                </div>
+                <div class="form-group">
+                    <label>Contraseña del Usuario</label>
+                    <input type="password" name="password" class="form-control" >
+                </div>
+                <div class="form-group">
+                    <label>Nombre del Usuario</label>
+                    <input type="text" name="first_name" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label>Apellidos del Usuario</label>
+                    <input type="text" name="last_name" class="form-control" >
+                </div>
+                <div class="form-group">
+                    <label>email del Usuario</label>
+                    <input type="text" name="email" class="form-control" >
+                </div>
+                <button type="submit" name="Dar de alta" class="btn btn-default btn-block">Dar de alta</button>
+              </form>
+            </div>
+            <div class="list-group">
+              <a class="list-group-item active main-color-bg">
+                 Dar de alta a un Administrador
+              </a>
+              <form id="login list-group-item" method="POST" class="well" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="extend">
+                <div class="form-group">
+                    <label>Usuario</label>
+                    <br>
+                    {{ form.user}}
+                </div>
+                <div class="form-group">
+                    <label>Direccion del Usuario</label>
+                    <br>
+                    <input type="text" name="Direccion" class="form-control" >
+                </div>
+                <div class="form-group">
+                    <label>Telefono del Usuario</label>
+                    <br>
+                    <input type="text" name="Telefono" class="form-control" >
+                </div>
+                <div class="form-group">
+                    <label>Imagen del Usuario</label
+                      <br>
+                    {{ form.Imagen}}
+                </div>
+                <button type="submit" name="Dar de alta" class="btn btn-default btn-block">Dar de alta</button>
+              </form>
+            </div>
+          </div>
+          <div class="col-md-8">
+            <div class="panel panel-defaul">
+              <div class="panel-heading main-color-bg">
+                <h3 class="panel-title">Administradores</h3>
+              </div>
+              <div class="panel-body">
+                <table class="table table-stripe table-hover">
+                      <tr>
+                        <th>Usuario</th>
+                        <th>Direccion</th>
+                        <th>Telefono</th>
+                        <th></th>
+                      </tr>
+                      {% for administrador in administradores %}
+                      <tr>
+                        <td>{{ administrador.user }}</td>
+                        <td>{{ administrador.Direccion }}</td>
+                        <td>{{ administrador.Telefono }}</td>
+                        <td><a class="btn btn-default"
+                          href="{% url 'Administrador:AdministradorEditar' administrador.id %}">Editar</a>
+                          <a class="btn btn-danger"
+                          href="{% url 'Administrador:AdministradorEliminar' administrador.id %}">Borrar</a>
+                        </td>
+                      </tr>
+                      {% endfor %}
+                </table>
+              </div>
+              </div>
+
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer id="footer">
+      <p>Copyright jose ricardo & luis, &copy; 2017</p>
+
+    </footer>
+  <script>
+     CKEDITOR.replace( 'editor1' );
+ </script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script src="{% static 'js/bootstrap.min.js' %}"></script>
+  </body>
+</html>

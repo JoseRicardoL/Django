@@ -1,0 +1,74 @@
+{% load staticfiles %}
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Tienda Virtual</title>
+    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+    <script src="http://cdn.ckeditor.com/4.6.1/standard/ckeditor.js"></script>
+  </head>
+  <body>
+
+    <nav class="navbar navbar-default">
+      <div class="container">
+        <div class="navbar-header">
+          <a class="navbar-brand" href="#">Editar </a>
+        </div>
+          <ul class="nav navbar-nav navbar-right">
+            <li class="current"><a href="{% url 'Producto:ProductoList' %}">Home</a></li>
+            <li class="current"><a href="{% url 'Producto:ProductoCarrito' %}">Carrito</a></li>
+            <li><a href="#">Welcome, {{ user.username }}</a></li>
+            <li><a href="{% url "Administrador:logout" %}">logout</a></li>
+          </ul>
+        </div>
+    </nav>
+    <header id="header">
+      <div class="container">
+        <div class="row">
+          <div class="col-md-12">
+            <h1 class="text-center"> Administrador</small></h1>
+          </div>
+        </div>
+      </div>
+    </header>
+    <section id="main">
+      <div class="container">
+        <div class="row">
+          <div class="form col-md-6">
+            <div class="imagenUser">
+              <img src="{{ carrito.Producto_Carrito.Imagen_Producto.url }}" alt="" class="pequena img-responsive img-circle">
+            </div>
+          </div>
+          <div class="form col-md-6">
+            <form id="login" method="POST" class="well" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="form-group" >
+                    <label>Cantidad</label>
+                    {{ form.Cantidad }}
+                </div>
+                <div class="form-group" style='display:none;'>
+                    {{ form.Cliente_Carrito }}
+                </div>
+                <div class="form-group" style='display:none;'>
+                    {{ form.Producto_Carrito }}
+                </div>
+                <button type="submit" class="btn btn-default btn-block">Guardar</button>
+              </form>
+          </div>
+        </div>
+      </div>
+    </section>
+    <footer id="footer">
+      <p>Copyright Cerritos&Santiago, &copy; 2017</p>
+    </footer>
+    <script>
+       CKEDITOR.replace( 'editor1' );
+    </script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script src="{% static 'js/bootstrap.min.js' %}"></script>
+  </body>
+</html>

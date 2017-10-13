@@ -1,0 +1,80 @@
+{% load staticfiles %}
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>LOGIN Administrador</title>
+    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+    <script src="http://cdn.ckeditor.com/4.6.1/standard/ckeditor.js"></script>
+  </head>
+  <body>
+    <nav class="navbar navbar-default">
+      <div class="container">
+        <div class="navbar-header">
+          <a href="{% url 'Producto:ProductoList' %}">Home</a>
+          <a class="navbar-brand" href="#">Registrarse</a>
+        </div>
+      </div>
+    </nav>
+    <header id="header">
+      <div class="container">
+        <div class="row">
+          <div class="col-md-12">
+            <h1 class="text-center"> Tienda Virtual</small></h1>
+          </div>
+        </div>
+      </div>
+    </header>
+    <section id="main">
+      <div class="container">
+        <div class="row">
+          <div class="col-md-4 col-md-offset-4">
+            <div class="list-group">
+              <form id="login list-group-item" method="POST" class="well">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="user">
+                <div class="form-group">
+                    <label>Usuario</label>
+                    <input type="text" name="username" class="form-control" >
+                </div>
+                <div class="form-group">
+                    <label>Contraseña del Usuario</label>
+                    <input type="password" name="password" class="form-control" >
+                </div>
+                <div class="form-group">
+                    <label>Nombre del Usuario</label>
+                    <input type="text" name="first_name" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label>Apellidos del Usuario</label>
+                    <input type="text" name="last_name" class="form-control" >
+                </div>
+                <div class="form-group">
+                    <label>email del Usuario</label>
+                    <input type="text" name="email" class="form-control" >
+                </div>
+                <button type="submit" name="Dar de alta" class="btn btn-default btn-block">Dar de alta</button>
+              </form>
+              <div class="text-center">
+                <h3>¿Ya tienes cuenta? <br>¿que haces aqui? <a href="{% url 'Administrador:LoginAdministrador' %}">Logeate</a></h3>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <footer id="footer">
+      <p>Copyright jose ricardo & luis, &copy; 2017</p>
+    </footer>
+    <script>
+       CKEDITOR.replace( 'editor1' );
+    </script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script src="{% static 'js/bootstrap.min.js' %}"></script>
+  </body>
+</html>
