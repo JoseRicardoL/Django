@@ -1,38 +1,29 @@
-# -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-
 from django.shortcuts import render, redirect
 from .forms import FormUsuario, FormUser
 from .models import Usuario
 from Dispositivo.models import Dispositivo
-from Dispositivo.views import (monitoreosSNMP,
-                               muchasimagenes,
-                               creardb,
-                               muchosupdatedb,
-                               staff_required,
-                               walk)
+from Dispositivo.views import (walk, muchasimagenes, creardb, abortar,
+                               monitoreosSNMP, muchosupdatedb, staff_required,
+                               listadeso)
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from ObserviumProblem.settings import BASE_DIR
 import pygeoip
-import thread
+import threading
+import time
 import os
-from pysnmp.hlapi import (getCmd,
-                          SnmpEngine,
-                          CommunityData,
-                          UdpTransportTarget,
-                          ContextData,
-                          ObjectType,
-                          ObjectIdentity)
+from pysnmp.hlapi import (SnmpEngine, CommunityData, UdpTransportTarget,
+                          getCmd, ContextData, ObjectType, ObjectIdentity)
 
 gloc = pygeoip.GeoIP(BASE_DIR+'/database/GeoLiteCity.dat')
+lista_oid = ['1.3.6.1.2.1.1.1.0', '1.3.6.1.2.1.2.1.0']
 
 
 def consultaSNMP(dispositivos, oid):
     lista = []
     for dispositivo in dispositivos:
-        resultado = []
         errorIndication, errorStatus, errorIndex, varBinds = next(
             getCmd(SnmpEngine(),
                    CommunityData(dispositivo.Comunidad),
@@ -43,18 +34,11 @@ def consultaSNMP(dispositivos, oid):
         )
 
         if errorIndication:
-            print(errorIndication)
-            for elemento in oid:
-                resultado.append('error')
+            resultado = ['error' for elemento in oid]
         elif errorStatus:
-            print('%s at %s' % (errorStatus.prettyPrint(),
-                                errorIndex and varBinds[
-                                    int(errorIndex) - 1][0] or '?'))
-            for elemento in oid:
-                resultado.append('error')
+            resultado = ['error' for elemento in oid]
         else:
-            for varBind in varBinds:
-                resultado.append(str(varBind[1]))
+            resultado = [str(varBind[1]) for varBind in varBinds]
         lista.append([dispositivo.id, resultado])
     return lista
 
@@ -62,22 +46,15 @@ def consultaSNMP(dispositivos, oid):
 def sistemaop(lista):
     enlinea = 0
     fueralinea = 0
-    tiposistema = []
-    for elemento in lista:
-        if "Linux" in elemento[1][0]:
-            tiposistema.append([elemento[0], "Linux"])
+    tiposistema = [[elemento[0], tipo]
+                   for elemento in lista for tipo in listadeso
+                   if tipo in elemento[1][0]]
+    for elemento in tiposistema:
+        if elemento[1] != 'error':
             enlinea += 1
-        elif "Windows" in elemento[1][0]:
-            tiposistema.append([elemento[0], "Windows"])
-            enlinea += 1
-        elif "error" == elemento[1][0]:
+        else:
             fueralinea += 1
-            tiposistema.append([elemento[0], "error"])
-        elif "otrosis" == elemento[1][0]:
-            enlinea += 1
-            tiposistema.append([elemento[0], "otrosis"])
-    resumen = [len(lista), enlinea, fueralinea]
-    return tiposistema, resumen
+    return tiposistema, [len(lista), enlinea, fueralinea]
 
 
 def listar_posiciones(dispositivos):
@@ -94,14 +71,13 @@ def listar_posiciones(dispositivos):
 @staff_required(login_url="/")
 @login_required(login_url='/')
 def VistaUsuario(request):
+    abortar.set_x(-1)
     puertos = [0, 0, 0, 0]
     mostrar = [0, 0]
     listanumerointerfaz = []
     listahilos = []
     listaimagenes = []
     listawalk = []
-    lista_oid = ['1.3.6.1.2.1.1.1.0',
-                 '1.3.6.1.2.1.2.1.0']
     form = FormUsuario()
     usuario = Usuario.objects.filter(Usuario_id=request.user.id)
     dispositivo = Dispositivo.objects.filter(
@@ -113,22 +89,27 @@ def VistaUsuario(request):
             listanumerointerfaz.append([elemento[0], elemento[1][1]])
             for tipomonitoreo in monitoreosSNMP:
                 nombrecad = str(str(tipomonitoreo[0])+str(elemento[0])+'.rrd')
-                if os.path.isfile(nombrecad):
-                    print '****** si hay'
-                else:
+                if os.path.isfile(nombrecad) is False:
                     creardb(nombrecad, elemento)
-                    print '****** no hay'
-                nombreimagen = str(
-                    "media/"+str(tipomonitoreo[0])+str(elemento[0])+'.png')
-                if os.path.isfile(nombreimagen):
-                    print ("Ya existe imagen")
-                else:
-                    listahilos.append([elemento[0],
-                                       tipomonitoreo[0],
-                                       tipomonitoreo[1], tipomonitoreo[2]])
-                    listaimagenes.append([elemento[0], tipomonitoreo[0]])
-    thread.start_new_thread(muchosupdatedb, (listahilos,))
-    thread.start_new_thread(muchasimagenes, (listaimagenes,))
+                listahilos.append([elemento[0], tipomonitoreo[0],
+                                   tipomonitoreo[1], tipomonitoreo[2]])
+                listaimagenes.append([elemento[0], tipomonitoreo[0]])
+    time.sleep(5)
+    abortar.set_x(0)
+    if listahilos != []:
+        update = threading.Thread(
+            name='hiloupdate',
+            target=muchosupdatedb,
+            args=(listahilos, ))
+        update.daemon = True
+        update.start()
+    if listaimagenes != []:
+        imagen = threading.Thread(
+            name='hiloimagen',
+            target=muchasimagenes,
+            args=(listaimagenes, ))
+        imagen.daemon = True
+        imagen.start()
     lista2, resumen = sistemaop(respuesta)
     for elemento in lista2:
         if elemento[1] == 'error':
@@ -195,6 +176,7 @@ def EditarUsuario(request, Id):
 
 
 def LoginUsuario(request):
+    abortar.set_x(0)
     if request.method == 'POST':
         username = request.POST.get('username', None)
         password = request.POST.get('password', None)
@@ -209,6 +191,7 @@ def LoginUsuario(request):
 
 
 def logout_view(request):
+    abortar.set_x(-1)
     dispositivos = Dispositivo.objects.filter(
         Usuario_Dispositivo_id=request.user.id)
     for dispositivo in dispositivos:

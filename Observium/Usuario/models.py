@@ -9,7 +9,7 @@ class Usuario(models.Model):
     Usuario = models.OneToOneField(User, on_delete=models.CASCADE)
     Descripcion = models.CharField(max_length=120)
     Telefono = models.IntegerField()
-    Imagen = ImageField(upload_to=str(User.id))
+    Imagen = ImageField(upload_to='Usuarios')
 
     def __str__(self):
         return '{}'.format(

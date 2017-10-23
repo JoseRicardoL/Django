@@ -8,17 +8,13 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.decorators import user_passes_test
 from rrdtool import ProgrammingError, OperationalError
 import rrdtool
+import logging
 import time
 import os
-import thread
-from pysnmp.hlapi import (getCmd,
-                          SnmpEngine,
-                          CommunityData,
-                          UdpTransportTarget,
-                          ContextData,
-                          ObjectType,
-                          ObjectIdentity,
-                          nextCmd)
+import threading
+from pysnmp.hlapi import (getCmd, SnmpEngine, CommunityData, nextCmd,
+                          UdpTransportTarget, ContextData, ObjectType,
+                          ObjectIdentity)
 
 monitoreosSNMP = [['trafico',
                    '1.3.6.1.2.1.2.2.1.10.3',
@@ -37,16 +33,37 @@ monitoreosSNMP = [['trafico',
                    '1.3.6.1.2.1.11.2.0',
                    "Paquetes SNMP"]]
 
+lista_oid = ['1.3.6.1.2.1.1.1.0',
+             '1.3.6.1.2.1.1.3.0',
+             '1.3.6.1.2.1.1.5.0',
+             '1.3.6.1.2.1.1.4.0',
+             '1.3.6.1.2.1.1.6.0',
+             '1.3.6.1.2.1.2.1.0',
+             '1.3.6.1.2.1.2.2.1.10.3',
+             '1.3.6.1.2.1.2.2.1.16.3']
+
+listadeso = ["Linux", "Windows", "error"]
+logging.basicConfig(level=logging.INFO,
+                    format='[%(levelname)s] (%(threadName)-s) %(message)s')
+
+
+class Matarhilo:
+
+    def __init__(self, x):
+        self.__x = x
+
+    def get_x(self):
+        return self.__x
+
+    def set_x(self, x):
+        self.__x = x
+
+
+abortar = Matarhilo(0)
+
 
 def staff_required(login_url=None):
     return user_passes_test(lambda u: u.is_staff, login_url=login_url)
-
-
-def tuplaoid(oid):
-    lista = []
-    for elemento in oid:
-        lista.append(ObjectType(ObjectIdentity(elemento)))
-    return lista
 
 
 def walk(dispositivos, oid, numerointerfaz):
@@ -66,13 +83,8 @@ def walk(dispositivos, oid, numerointerfaz):
                          ContextData(),
                          ObjectType(ObjectIdentity(oid))):
                             if errorIndication:
-                                print(errorIndication)
                                 break
                             elif errorStatus:
-                                print('%s at %s' % (errorStatus.prettyPrint(),
-                                                    errorIndex and varBinds[
-                                                        int(errorIndex) - 1]
-                                                    [0] or '?'))
                                 break
                             else:
                                 for dato in varBinds:
@@ -93,7 +105,6 @@ def walk(dispositivos, oid, numerointerfaz):
 def consultaSNMP(dispositivos, oid):
     lista = []
     for dispositivo in dispositivos:
-        resultado = []
         errorIndication, errorStatus, errorIndex, varBinds = next(
             getCmd(SnmpEngine(),
                    CommunityData(dispositivo.Comunidad),
@@ -110,37 +121,24 @@ def consultaSNMP(dispositivos, oid):
         )
 
         if errorIndication:
-            print(errorIndication)
-            for elemento in oid:
-                resultado.append('error')
+            resultado = ['error' for elemento in oid]
         elif errorStatus:
-            print('%s at %s' % (errorStatus.prettyPrint(),
-                                errorIndex and varBinds[
-                                    int(errorIndex) - 1][0] or '?'))
-            for elemento in oid:
-                resultado.append('error')
+            resultado = ['error' for elemento in oid]
         else:
-            for varBind in varBinds:
-                resultado.append(str(varBind[1]))
+            resultado = [str(varBind[1]) for varBind in varBinds]
         lista.append([dispositivo.id, resultado])
     return lista
 
 
 def consultaunicaSNMP(dispositivo, oid):
-    resultado = 0
     errorIndication, errorStatus, errorIndex, varBinds = next(
         getCmd(SnmpEngine(),
                CommunityData(dispositivo.Comunidad),
                UdpTransportTarget((dispositivo.Ip, 161)),
-               ContextData(),
-               ObjectType(ObjectIdentity(oid))))
+               ContextData(), ObjectType(ObjectIdentity(oid))))
     if errorIndication:
-        print(errorIndication)
         resultado = 0
     elif errorStatus:
-        print('%s at %s' % (errorStatus.prettyPrint(),
-                            errorIndex and varBinds[
-                                int(errorIndex) - 1][0] or '?'))
         resultado = 0
     else:
         for varBind in varBinds:
@@ -154,10 +152,11 @@ def creardb(nombrecad, dispositivo):
             str('N'), str("--step"), str('60'),
             str("DS:inoctets:COUNTER:600:U:U"),
             str("DS:outoctets:COUNTER:600:U:U"),
-            str("RRA:AVERAGE:0.5:6:700"),
             str("RRA:AVERAGE:0.5:1:600"))
         if ret:
-            print rrdtool.error()
+            logging.warning(
+                'Error al Crear la BD: '+nombrecad + ''
+                '\t Dispositivo: '+dispositivo)
 
 
 def muchosupdatedb(listahilos):
@@ -172,21 +171,38 @@ def muchosupdatedb(listahilos):
                 consultaunicaSNMP(dispositivo, str(hilos[3])))
             valor = str("N:" + str(total_input_traffic) + ':' + str(
                 total_output_traffic))
-            print valor
+            cadena = str(str(hilos[1])+str(dispositivo.id))
+            logging.info('Actualizando BD: '+cadena + '\tValor: '+valor)
             cadena1 = str(str(hilos[1])+str(dispositivo.id)+".rrd")
-            rrdtool.update(cadena1, valor)
-            rrdtool.dump(str(str(hilos[1])+str(dispositivo.id)+".rrd"),
-                         str(str(hilos[1])+str(dispositivo.id)+".xml"))
+            try:
+                rrdtool.update(cadena1, valor)
+                rrdtool.dump(str(str(hilos[1])+str(dispositivo.id)+".rrd"),
+                             str(str(hilos[1])+str(dispositivo.id)+".xml"))
+            except (Exception, ProgrammingError, OperationalError):
+                logging.warning(
+                    'Error al Actualizando BD: '+cadena + '\tValor: '+valor)
+                abortar.set_x(-1)
+            if abortar.get_x() == -1:
+                break
             time.sleep(1)
+        if abortar.get_x() == -1:
+            break
 
 
 def muchasimagenes(listaimagenes):
-    tiempo_actual = int(time.time())
-    tiempo = tiempo_actual-300
     while 1:
         for imagenalv in listaimagenes:
             dispositivo = Dispositivo.objects.get(id=imagenalv[0])
             cad = str(imagenalv[1])+str(dispositivo.id)
+            fichero = open(str(str(cad)+".xml"), 'r')
+            texto = fichero.readlines()
+            fichero.close()
+            for oracion in texto:
+                if '<row>' in oracion:
+                    if 'NaN' not in oracion:
+                        lista = oracion.split()
+                        tiempo = lista[5]
+                        break
             try:
                 ret = rrdtool.graph(
                     str("media/"+str(cad)+".png"),
@@ -198,61 +214,47 @@ def muchasimagenes(listaimagenes):
                         str(cad)+".rrd")+":outoctets:AVERAGE"),
                     str("AREA:inoctets#00FF00:In "+str(imagenalv[1])),
                     str("LINE1:outoctets#0000FF:Out "+str(imagenalv[1])+"\r"))
-                print '***sigo vivo : '+str(dispositivo.Comunidad)+str(ret)
-            except ProgrammingError:
-                print "Oops!  That was no valid number.  Try again..."
-            except OperationalError:
-                print "Oops!  That was no valid number.  Try again..."
-            except Exception:
-                print "Oops!  That was no valid number.  Try again..."
-        time.sleep(30)
+                logging.info('Generando imagen : '+cad+str(ret))
+            except (Exception, ProgrammingError, OperationalError):
+                logging.warning(
+                    "Error al generar la imagen : "+cad)
+                abortar.set_x(-1)
+            if abortar.get_x() == -1:
+                break
+        if abortar.get_x() == -1:
+            break
+        else:
+            for i in range(30):
+                time.sleep(1)
+                if abortar.get_x() == -1:
+                    break
 
 
 def sistemaop(lista):
-    tiposistema = []
-    for elemento in lista:
-        if "Linux" in elemento[1]:
-            tiposistema.append([elemento[0], "Linux"])
-        elif "Windows" in elemento[1]:
-            tiposistema.append([elemento[0], "Windows"])
-        else:
-            tiposistema.append([elemento[0], "error"])
+    tiposistema = [[elemento[0], tipo]
+                   for elemento in lista for tipo in listadeso
+                   if tipo in elemento[1]]
     return tiposistema
 
 
 def generartabla(listawalk):
-    superlista = []
-    for dispositivo in listawalk:
-        lista = []
-        for i in range(int(dispositivo[1])):
-            sublista = []
-            for j in range(len(dispositivo[2])):
-                sublista.append(dispositivo[2][j][i])
-            lista.append(sublista)
-        superlista.append([dispositivo[0], lista])
+    superlista = [[dispositivo[0], [[dispositivo[2][j][i]
+                                     for j in range(len(dispositivo[2]))]
+                                    for i in range(int(dispositivo[1]))]]
+                  for dispositivo in listawalk]
     return superlista
 
 
 @staff_required(login_url="/")
 @login_required(login_url='/')
 def VistaDispositivo(request):
-    listanumerointerfaz = []
-    listawalk = []
+    abortar.set_x(-1)
     listahilos = []
     listaimagenes = []
-    lista = []
     dias = []
     usuario = Usuario.objects.filter(Usuario_id=request.user.id)
     dispositivo = Dispositivo.objects.filter(
         Usuario_Dispositivo_id=request.user.id)
-    lista_oid = ['1.3.6.1.2.1.1.1.0',
-                 '1.3.6.1.2.1.1.3.0',
-                 '1.3.6.1.2.1.1.5.0',
-                 '1.3.6.1.2.1.1.4.0',
-                 '1.3.6.1.2.1.1.6.0',
-                 '1.3.6.1.2.1.2.1.0',
-                 '1.3.6.1.2.1.2.2.1.10.3',
-                 '1.3.6.1.2.1.2.2.1.16.3']
     respuesta = consultaSNMP(dispositivo, lista_oid)
     for elemento in respuesta:
         if elemento[1][1] == 'error':
@@ -266,28 +268,33 @@ def VistaDispositivo(request):
                          (str(hor)+"h "+str(minu)+"m "+str(seg)+"s")])
             for tipomonitoreo in monitoreosSNMP:
                 nombrecad = str(str(tipomonitoreo[0])+str(elemento[0])+'.rrd')
-                if os.path.isfile(nombrecad):
-                    print '****** si hay'
-                else:
+                if not os.path.isfile(nombrecad):
                     creardb(nombrecad, elemento)
-                    print '****** no hay'
-                nombreimagen = str(
-                    "media/"+str(tipomonitoreo[0])+str(elemento[0])+'.png')
-                if os.path.isfile(nombreimagen):
-                    print ("Ya existe imagen")
-                else:
-                    listahilos.append([elemento[0],
-                                       tipomonitoreo[0],
-                                       tipomonitoreo[1], tipomonitoreo[2]])
-                    listaimagenes.append([elemento[0], tipomonitoreo[0]])
-    thread.start_new_thread(muchosupdatedb, (listahilos,))
-    thread.start_new_thread(muchasimagenes, (listaimagenes,))
-    for elemento in respuesta:
-        lista.append([elemento[0], elemento[1][0]])
+                listahilos.append([elemento[0],
+                                   tipomonitoreo[0],
+                                   tipomonitoreo[1], tipomonitoreo[2]])
+                listaimagenes.append([elemento[0], tipomonitoreo[0]])
+    time.sleep(5)
+    abortar.set_x(0)
+    if listahilos != []:
+        update = threading.Thread(
+            name='hiloupdate',
+            target=muchosupdatedb,
+            args=(listahilos, ))
+        update.daemon = True
+        update.start()
+    if listaimagenes != []:
+        imagen = threading.Thread(
+            name='hiloimagen',
+            target=muchasimagenes,
+            args=(listaimagenes, ))
+        imagen.daemon = True
+        imagen.start()
+    lista = [[elemento[0], elemento[1][0]] for elemento in respuesta]
     sis = sistemaop(lista)
-    for elemento in respuesta:
-        if elemento[1][5] != 'error':
-            listanumerointerfaz.append([elemento[0], elemento[1][5]])
+    listanumerointerfaz = [[elemento[0], elemento[1][5]]
+                           for elemento in respuesta
+                           if elemento[1][5] != 'error']
     listawalk = generartabla(walk(dispositivo,
                                   '1.3.6.1.2.1.2.2.1',
                                   listanumerointerfaz))
@@ -305,28 +312,16 @@ def VistaDispositivo(request):
 @staff_required(login_url="/")
 @login_required(login_url='/')
 def IndividualDispositivo(request, Id):
+    abortar.set_x(-1)
     usuario = Usuario.objects.filter(Usuario_id=request.user.id)
     dispositivos = Dispositivo.objects.filter(
         Usuario_Dispositivo_id=request.user.id)
-    lista_dispositivo = []
     listahilos = []
     listaimagenes = []
-    lista = []
     dias = []
-    cadena = []
     dispositivo = Dispositivo.objects.get(id=Id)
-    lista_dispositivo.append(dispositivo)
-    lista_oid = ['1.3.6.1.2.1.1.1.0',
-                 '1.3.6.1.2.1.1.3.0',
-                 '1.3.6.1.2.1.1.5.0',
-                 '1.3.6.1.2.1.1.4.0',
-                 '1.3.6.1.2.1.1.6.0',
-                 '1.3.6.1.2.1.2.1.0',
-                 '1.3.6.1.2.1.2.2.1.10.3',
-                 '1.3.6.1.2.1.2.2.1.16.3']
-    respuesta = consultaSNMP(lista_dispositivo, lista_oid)
-    for elemento in respuesta:
-        lista.append([elemento[0], elemento[1][0]])
+    respuesta = consultaSNMP([dispositivo], lista_oid)
+    lista = [[elemento[0], elemento[1][0]] for elemento in respuesta]
     sis = sistemaop(lista)
     for elemento in respuesta:
         if elemento[1][1] == 'error':
@@ -340,25 +335,30 @@ def IndividualDispositivo(request, Id):
                          (str(hor)+"h "+str(minu)+"m "+str(seg)+"s")])
             for tipomonitoreo in monitoreosSNMP:
                 nombrecad = str(str(tipomonitoreo[0])+str(elemento[0])+'.rrd')
-                if os.path.isfile(nombrecad):
-                    print '****** si hay'
-                else:
+                if not os.path.isfile(nombrecad):
                     creardb(nombrecad, elemento)
-                    print '****** no hay'
-                nombreimagen = str(
-                    "media/"+str(tipomonitoreo[0])+str(elemento[0])+'.png')
-                if os.path.isfile(nombreimagen):
-                    print ("Ya existe imagen")
-                else:
-                    listahilos.append([elemento[0],
-                                       tipomonitoreo[0],
-                                       tipomonitoreo[1], tipomonitoreo[2]])
-                    listaimagenes.append([elemento[0], tipomonitoreo[0]])
-    thread.start_new_thread(muchosupdatedb, (listahilos,))
-    thread.start_new_thread(muchasimagenes, (listaimagenes,))
-    for elemento in monitoreosSNMP:
-        cadena.append([elemento[3], str(
-            "/media/"+str(elemento[0])+str(Id)+'.png')])
+                listahilos.append([elemento[0],
+                                   tipomonitoreo[0],
+                                   tipomonitoreo[1], tipomonitoreo[2]])
+                listaimagenes.append([elemento[0], tipomonitoreo[0]])
+    time.sleep(5)
+    abortar.set_x(0)
+    if listahilos != []:
+        update = threading.Thread(
+            name='hiloupdate',
+            target=muchosupdatedb,
+            args=(listahilos, ))
+        update.daemon = True
+        update.start()
+    if listaimagenes != []:
+        imagen = threading.Thread(
+            name='hiloimagen',
+            target=muchasimagenes,
+            args=(listaimagenes, ))
+        imagen.daemon = True
+        imagen.start()
+    cadena = [[elemento[3], str("/media/"+str(elemento[0])+str(Id)+'.png')]
+              for elemento in monitoreosSNMP]
     contexto = {'usuarios': usuario,
                 'dispositivos': dispositivos,
                 'dispositivo': dispositivo,
@@ -418,7 +418,6 @@ def EditarDispositivo(request, Id):
 def EliminarDispositivo(request, Id):
     dispositivo = Dispositivo.objects.get(id=Id)
     usuario = Usuario.objects.filter(Usuario_id=request.user.id)
-
     if request.method == 'POST':
         dispositivo.delete()
         return redirect('Dispositivo:VistaDispositivo')
