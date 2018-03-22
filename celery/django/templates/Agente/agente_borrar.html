@@ -1,0 +1,83 @@
+{% extends "Base.html" %}
+{% block page_title %}Observium | Borrar Dispositivo{% endblock %}
+{% block navbar %}
+<div class="navbar-custom-menu">
+  <ul class="nav navbar-nav">
+    <li class="dropdown user user-menu">
+      <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+        Bienvenido, {{ user.username }}
+      </a>
+      <ul class="dropdown-menu">
+        <li class="user-header">
+          {% for administrador in administradores %}
+            {% if administrador.Administrador_id  == user.id %}
+            <img src="{{ administrador.Imagen.url }}" class="img-circle user-image img-responsive" alt="User Image">
+            {% endif %}
+          {% endfor %}
+          <p>
+            {% for administrador in administradores %}
+              {% if administrador.Administrador_id  == user.id %}
+                {{user.username}} - {{ administrador.Descripcion }}
+              {% endif %}
+            {% endfor %}
+            <small>Miebro desde {{ user.date_joined }}</small>
+          </p>
+        </li>
+        <li class="user-footer">
+          <div class="pull-right">
+            <a href="{% url "logout" %}" class="btn btn-default btn-flat">
+              logout
+            </a>
+          </div>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="#" data-toggle="control-sidebar"><i class="fa fa-gears"></i></a>
+    </li>
+  </ul>
+</div>
+{% endblock %}
+{% block userimage %}
+<div class="pull-left image">
+  {% for administrador in administradores %}
+    {% if administrador.Administrador_id  == user.id %}
+    <img src="{{ administrador.Imagen.url }}" class="img-circle user-image img-responsive" alt="User Image">
+    {% endif %}
+  {% endfor %}
+</div>
+{% endblock %}
+{% block content %}
+<h2>Borrar un agente</h2>
+<div class="form ">
+  <form  method="POST" class="well" enctype="multipart/form-data">
+    {% csrf_token %}
+    <h3>Desea borrar el agente:</h3>
+    <div class="form-group">
+        <label>Nombre del Host</label>
+        {{ agente.NombreHost }}
+    </div>
+    <div class="form-group">
+        <label>Ip</label>
+        {{ agente.Ip }}
+    </div>
+    <div class="form-group">
+        <label>Ip publica</label>
+        {{ agente.Ip_publica }}
+    </div>
+    <div class="form-group">
+        <label>Protocolo</label>
+        {{ agente.Protocolo }}
+    </div>
+    <div class="form-group">
+        <label>Puerto</label>
+        {{ agente.Puerto }}
+    </div>
+    <div class="form-group">
+        <label>Comunidad</label>
+        {{ agente.Comunidad }}
+    </div>
+    <button type="submit" class="btn btn-default btn-block">Eliminar</button>
+  </form>
+</div>
+{% endblock %}

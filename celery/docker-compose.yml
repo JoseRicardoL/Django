@@ -1,0 +1,61 @@
+version: '2'
+
+services:
+  django:
+    build: ./django
+    volumes:
+      - ./django:/webapp
+    depends_on:
+      - rabbitmq
+      - celery
+      - node
+      - db
+
+  celery:
+    build: ./django
+    command: celery worker -A celery_realtime -l info
+    volumes:
+      - ./django:/webapp
+    depends_on:
+      - rabbitmq
+      - redis
+
+  node:
+    build: ./node
+    volumes:
+      - ./node:/nodeapp
+    depends_on:
+      - rabbitmq
+      - redis
+    ports:
+      - "3000:3000"
+
+  nginx:
+    image: nginx
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    ports:
+      - "80:80"
+    depends_on:
+      - django
+
+  redis:
+    image: redis
+
+  rabbitmq:
+    image: rabbitmq
+  db:
+     image: mysql
+     volumes:
+       - dbdata:/var/lib/mysql
+     restart: always
+     ports:
+       - "3306:3306"
+     environment:
+       MYSQL_ROOT_PASSWORD: scopedge
+       MYSQL_DATABASE: ObserviumDB
+       MYSQL_USER: huitripam
+       MYSQL_PASSWORD: pro
+
+volumes:
+    dbdata:

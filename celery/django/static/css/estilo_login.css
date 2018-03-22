@@ -1,0 +1,384 @@
+@import url(https://fonts.googleapis.com/css?family=Gudea:400,700);
+body
+{
+    font-family: 'Gudea', sans-serif;
+
+    overflow: hidden;
+
+    height: 100vh;
+    margin: 0;
+
+    background: #1abc9c;
+    /* Old browsers */
+    /* FF3.6+ */
+    background: -webkit-gradient(linear, left top, right bottom, color-stop(0%, #1abc9c), color-stop(100%, #34495e));
+    /* Chrome,Safari4+ */
+    background: -webkit-linear-gradient(-45deg, #1abc9c 0%, #34495e 100%);
+    /* Chrome10+,Safari5.1+ */
+    /* Opera 11.10+ */
+    /* IE10+ */
+    background: -webkit-linear-gradient(315deg, #1abc9c 0%, #34495e 100%);
+    background:         linear-gradient(135deg, #1abc9c 0%, #34495e 100%);
+
+    -webkit-perspective: 800px;
+            perspective: 800px;
+    /* W3C */
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#1abc9c ', endColorstr='#34495e',GradientType=1 );
+    /* IE6-9 fallback on horizontal gradient */
+}
+body ::-webkit-input-placeholder
+{
+    color: #4e546d;
+}
+body .authent
+{
+    /* IE6-9 fallback on horizontal gradient */
+    position: absolute;
+    top: 200px;
+    right: 90px;
+    bottom: 0;
+    left: 0;
+
+    display: none;
+
+    width: 100px;
+    height: 70px;
+    margin: auto;
+    padding: 20px 70px;
+
+    text-align: center;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+
+    opacity: 0;
+    color: white;
+    background: #35394a;
+    /* Old browsers */
+    /* FF3.6+ */
+    background: -webkit-gradient(linear, left bottom, right top, color-stop(0%, #35394a), color-stop(100%, #1f222e));
+    /* Chrome,Safari4+ */
+    background: -webkit-linear-gradient(45deg, #35394a 0%, #1f222e 100%);
+    /* Chrome10+,Safari5.1+ */
+    /* Opera 11.10+ */
+    /* IE10+ */
+    background:         linear-gradient(45deg, #35394a 0%, #1f222e 100%);
+    /* W3C */
+
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#35394a', endColorstr='#1f222e',GradientType=1 );
+}
+body .authent p
+{
+    text-align: center;
+
+    color: white;
+}
+body .success
+{
+    display: none;
+
+    color: #d5d8e2;
+}
+body .success p
+{
+    font-size: 14px;
+}
+body p
+{
+    font-size: 10px;
+
+    text-align: left;
+
+    color: #5b5e6f;
+}
+body .testtwo
+{
+    left: -320px !important;
+}
+body .test
+{
+    top: -100px !important;
+
+    -webkit-transform: rotateX(70deg) scale(.8) !important;
+            transform: rotateX(70deg) scale(.8) !important;
+    pointer-events: none;
+
+    opacity: .6 !important;
+    box-shadow: 0 20px 30px 3px rgba(0, 0, 0, .55);
+
+    -webkit-filter: blur(1px);
+            filter: blur(1px);
+}
+body .login
+{
+    position: relative;
+    position: absolute;
+    top: 20px;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+
+    width: 240px;
+    height: 70%;
+    margin: auto;
+    padding: 100px 40px 40px 40px;
+
+    -webkit-transition-timing-function: cubic-bezier(.68, -.25, .265, .85);
+    -webkit-transition-duration: .5s;
+            transition-duration: .5s;
+    -webkit-transition-property: opacity,box-shadow,top,left,-webkit-transform;
+            transition-property: opacity,box-shadow,top,left,-webkit-transform;
+            transition-property: transform,opacity,box-shadow,top,left;
+            transition-property: transform,opacity,box-shadow,top,left,-webkit-transform;
+    -webkit-transform: rotateX(0deg);
+            transform: rotateX(0deg);
+    -webkit-transform-origin: 161px 100%;
+            transform-origin: 161px 100%;
+
+    opacity: 1;
+    border-top: 2px solid #27ae60;
+    background: #35394a;
+    /* Old browsers */
+    /* FF3.6+ */
+    background: -webkit-gradient(linear, left bottom, right top, color-stop(0%, #35394a), color-stop(100%, #1f222e));
+    /* Chrome,Safari4+ */
+    background: -webkit-linear-gradient(45deg, #35394a 0%, #1f222e 100%);
+    /* Chrome10+,Safari5.1+ */
+    /* Opera 11.10+ */
+    /* IE10+ */
+    background:         linear-gradient(45deg, #35394a 0%, #1f222e 100%);
+    /* W3C */
+
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#35394a', endColorstr='#1f222e',GradientType=1 );
+    /* IE6-9 fallback on horizontal gradient */
+}
+body .login .validation
+{
+    position: absolute;
+    z-index: 1;
+    top: 6px;
+    right: 10px;
+
+    opacity: 0;
+}
+body .login .disclaimer
+{
+    position: absolute;
+    bottom: 20px;
+    left: 35px;
+
+    width: 250px;
+}
+body .login_title
+{
+    font-size: 16px;
+
+    height: 60px;
+
+    text-align: left;
+
+    color: #afb1be;
+}
+body .login_fields
+{
+    position: absolute;
+    left: 0;
+
+    height: 208px;
+}
+body .login_fields .icon
+{
+    position: absolute;
+    z-index: 1;
+    top: 8px;
+    left: 36px;
+
+    opacity: .5;
+}
+body .login_fields input[type='password']
+{
+    color: #27ae60 !important;
+}
+body .login_fields input[type='text'],
+body .login_fields input[type='password']
+{
+    font-family: 'Gudea', sans-serif;
+
+    left: 0;
+
+    width: 190px;
+    margin-top: -2px;
+    padding: 10px 65px;
+
+    color: #afb1be;
+    border-top: 2px solid #393d52;
+    border-right: none;
+    border-bottom: 2px solid #393d52;
+    border-left: none;
+    outline: none;
+    background: #32364a;
+    box-shadow: none;
+}
+body .login_fields__user,
+body .login_fields__password
+{
+    position: relative;
+}
+body .login_fields__submit
+{
+    position: relative;
+    top: 35px;
+    right: 0;
+    left: 0;
+
+    width: 80%;
+    margin: auto;
+}
+body .login_fields__submit .forgot
+{
+    font-size: 10px;
+
+    float: right;
+
+    margin-top: 11px;
+
+    text-decoration: underline;
+}
+body .login_fields__submit .forgot a
+{
+    color: #606479;
+}
+body .login_fields__submit input
+{
+    font-size: 11px;
+
+    padding: 10px 50px;
+
+    -webkit-transition-duration: .2s;
+            transition-duration: .2s;
+    -webkit-transition-property: background,color;
+            transition-property: background,color;
+    text-transform: uppercase;
+
+    color: #27ae60;
+    border: 2px solid #27ae60;
+    border-radius: 50px;
+    background: transparent;
+}
+body .login_fields__submit input:focus
+{
+    outline: none;
+    box-shadow: none;
+}
+body .login_fields__submit input:hover
+{
+    cursor: pointer;
+    -webkit-transition-duration: .2s;
+            transition-duration: .2s;
+    -webkit-transition-property: background,color;
+            transition-property: background,color;
+
+    color: white;
+    background: #27ae60;
+}
+
+/* Color Schemes */
+.love
+{
+    font-size: 11px;
+    font-weight: normal;
+
+    position: absolute;
+    right: 20px;
+    bottom: 0;
+}
+.love p
+{
+    font-family: 'Open Sans', sans-serif;
+    font-weight: normal;
+
+    color: white;
+}
+.love a
+{
+    font-weight: 700;
+
+    text-decoration: none;
+
+    color: white;
+}
+.love img
+{
+    position: relative;
+    top: 3px;
+
+    width: 10px;
+    margin: 0 4px;
+}
+
+.brand
+{
+    position: absolute;
+    bottom: 14px;
+    left: 20px;
+}
+.brand img
+{
+    width: 30px;
+}
+.registro{
+  padding-left: 10px;
+
+}
+.registro p{
+  font-size: 12px;
+}
+.registro p a{
+  text-decoration: none;
+}
+.inputfile {
+    width: 0.1px;
+    height: 0.1px;
+    opacity: 0;
+    overflow: hidden;
+    position: absolute;
+    z-index: -1;
+}
+
+.inputfile + label {
+    max-width: 80%;
+    font-size: 1.25rem;
+    font-weight: 700;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    cursor: pointer;
+    display: inline-block;
+    overflow: hidden;
+    padding: 0.625rem 1.25rem;
+}
+
+.inputfile + label svg {
+    width: 1em;
+    height: 1em;
+    vertical-align: middle;
+    fill: currentColor;
+    margin-top: -0.25em;
+    margin-right: 0.25em;
+}
+
+.iborrainputfile {
+	font-size:16px;
+	font-weight:normal;
+	font-family: 'Lato';
+}
+
+.inputfile + label {
+    color: #27ae60;
+    border: 2px solid currentColor;
+}
+
+.inputfile:focus + label,
+.inputfile.has-focus + label,
+.inputfile + label:hover {
+    color: #27ae60;
+}

@@ -1,0 +1,427 @@
+
+{% load staticfiles %}
+
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<title>Observium | Contrato</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}" >
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+	</head>
+	<body class="landing container-fluid">
+			<div id="page-wrapper">
+					<header id="header" class="alt">
+						<img src="media/logo.png" class="img-responsive "alt="" />
+						<h1>
+							<a href=" {% url "LoginAdministrador"%}">Observium</a>
+						</h1>
+						<nav id="nav">
+							<ul>
+								<li class="special">
+									<a href="#menu" class="menuToggle"><span>Menu</span></a>
+									<div id="menu">
+										<ul>
+											<li><a href=" {% url "LoginAdministrador"%} ">Ir al loggin</a></li>
+										</ul>
+									</div>
+								</li>
+							</ul>
+						</nav>
+					</header>
+					<section id="banner">
+						<div class="inner">
+							<img src="media/logo.png" class="img-responsive "alt="" />
+							<h2>Observium</h2>
+							<p>Contrato de administración de servicios<br />
+							Hay algunas cosas que tiene que saber<br />
+							antes de poder seguir, es importante que las leas</p>
+							<br><br>
+							<h3>He leído y acepto los términos y condiciones</h3>
+							<ul class="actions">
+								<li><a href=" {% url "Registrar"%} " class="button special">Crear cuenta</a></li>
+							</ul>
+						</div>
+						<a href="#one" class="more scrolly">Leer más</a>
+					</section>
+					<section id="confidencialidad" class="wrapper style2 special">
+						<div class="inner">
+							<header class="major">
+								<h2>Nota de confidencialidad</h2>
+								<p>Toda la información contenida en este documento tiene carácter confidencial que se entrega por parte del desarrollador al cliente y el acceso
+									a la misma es otorgado para dar a conoce los puntos que se deben acordar para su evaluación o aprobación.</p>
+							</header>
+						</div>
+						<a href="#one" class="more scrolly">Leer más</a>
+					</section>
+					<section id="one" class="wrapper style1 special">
+						<div class="inner">
+							<header class="major">
+								<h2>Introducción</h2>
+								<p>Este documento describe la administración de nivel de servicio y los acuerdos de nivel de servicio (SLA), por otra parte se estableceran
+									clausulas detalladas, pautas y umbrales acordados por ambas partes (administrador-equipo de desarrollo), Con el objetivo de proveer al administrador
+									de las herramientas necesarias para poder llevar acabo la gestión y la administración de los equipos de manera remota que
+									garantice la alta disponibilidad.
+								Incluye los factores de éxito importantes para que la administración de nivel de servicio y los indicadores de
+								rendimiento ayuden a evaluar el éxito.</p>
+								<p>
+									El presente acuerdo de nivel de servicio entre el proveedor Observium representa una forma tangible de poder gestionar el nivel de cumplimiento
+									respecto de los servicios que proveera. En específico, este documento trata temas
+									relacionados con la calidad de servicio ante la ocurrencia de algún evento adverso en la operatoria del sistema y cómo el proveedor reacciona
+									y responde frente a los reportes de incidentes.
+									El servicio prestado por PROVEEDOR a CLIENTE y al cual se encuentra vinculado el presente acuerdo es el sitema de monitoreo Observium y nos dedicaremos
+									en las siguientes clausulas a definir este.
+								</p>
+							</header>
+						</div>
+						<a href="#two" class="more scrolly">Leer más</a>
+					</section>
+					<section id="two" class="wrapper alt style2">
+						<section class="wrapper style2 spotlight">
+							<div class="inner">
+									<h2 >Descripción general de la administración de niveles de servicio</h2>
+									<p>Las organizaciones de la red han cumplido históricamente los requisitos de la red de extensión construyendo la infraestructura necesaria
+										y eficaz de red sólida para manejar los problemas del servicio individual. Tan pronto ocurra una interrupción de los servicios,
+										seremos capaces de predecirlo y notificarlo de manera oportuna, Otorgando la información analizada del agente, para que el
+										administrador	pueda tomar las adecuadas decisiones y así evitar una interrupción	particular.
+										Nuestro objetivo es dar a conocer las áreas de oportunidad que representen riesgos en la operatividad de forma oportuna
+										de tal manera que se puedan prevenir, así como conocer remotamente ciertos datos de interés para poder administrar los agentes.
+									</p>
+									<a href="#three" class="more scrolly">Leer más</a>
+							</div>
+						</section>
+					</section>
+					<section id="three" class="wrapper style3 special">
+						<div class="inner">
+							<header class="major">
+								<h2>Tablero de funciones</h2>
+								<p>Dentro de este servicio, a continuación se describen las tareas que se encuentra incluidas cada vez que se inicie sección</p>
+							</header>
+							<ul class="features">
+								<li class="icon fa-paper-plane-o">
+									<h3>Envió de alertas vía email</h3>
+									<p>Se envía un email al correo del administrador del agente especifico que se le haya detectado un comportamiento irregular .</p>
+								</li>
+								<li class="icon fa-laptop">
+									<h3>Administrar los agentes</h3>
+									<p>Un sistema tipo ABC gestionará la información de cada agente.</p>
+								</li>
+								<li class="icon fa-map-marker">
+									<h3>Geo localización de agentes</h3>
+									<p>Se geo localizaran los agentes y se marcaran en un mapa.</p>
+								</li>
+								<li class="icon fa-area-chart">
+									<h3>Indicadores de predicción</h3>
+									<p>Con base en las gráficas posteriormente se generara una predicción de los probables eventos.</p>
+								</li>
+								<li class="icon fa-bar-chart">
+									<h3>Graficas información</h3>
+									<p>Con base en la información del repositorio el sistema gráfica las estadísticas.</p>
+								</li>
+								<li class="icon fa-hdd-o">
+									<h3>Almacenamiento de información</h3>
+									<p>Se harán peticiones en tiempo real a cada agente disponible y la información obtenida se almacenara en una BD.</p>
+								</li>
+							</ul>
+							<a href="#indicadores" class="more scrolly">Leer más</a>
+						</div>
+					</section>
+					<section id="indicadores"class="spotlight wrapper style5 special">
+						<div class="inner">
+							<h2>Los indicadores de rendimiento</h2>
+
+							<p>Los indicadores de rendimiento son las escalas que marcan los valor que nos proporcionan en tiempo real la eficiencia de un
+								agente en nuestro caso se enfocara al monitoreo inventario de equipos que se tienen almacenados
+							</p>
+							<p> Predicciones de comportamiento están dadas por el rango del análisis de las respuestas obtenidas por cada agente en un
+								periodo determinado de tiempo	en nuestro caso sera de 60 segundos la cual nos basaremos para crear una predicción de
+							comportamiento de:
+							RAM, HDD y CPU</p>
+							<a href="#four" class="more scrolly">Leer más</a>
+						</div>
+					</section>
+					<section id="four" class="wrapper style4">
+						<div class="inner">
+							<header>
+								<h2>Anexo al indicador de rendimiento</h2>
+								<p>Los indicadores de rendimiento de la administración del nivel de servicio brindan un mecanismo para monitorear y mejorar los
+									niveles de servicio. Esto permite que los administradores reaccionen de manera veloz a los problemas del servicio
+									y comprenda más fácilmente los problemas que impactan al servicio o el costo de tiempo caído en su entorno.
+								</p><p>
+									Los indicadores de rendimiento de la administración de niveles de servicio  proporcionan los medios para comprender cabalmente
+									los niveles de servicio existentes y para realizar ajustes en función de los problemas actuales.
+									Esta es la base para brindar soporte proactivo y hacer mejoras en la calidad.
+									Cuando la organización realiza un análisis sobre el origen de los problemas y optimiza la calidad, ésta puede ser la mejor
+									metodología a fin de mejorar la disponibilidad, el rendimiento y la calidad de servicio disponibles.
+								</p><p>
+									Los objetivos secundarios ayudan a definir los procesos necesarios para alcanzar la Disponibilidad	y los niveles de rendimiento deseados.
+									Los objetivos secundarios reactivos incluyen:
+								</p><p>
+										<ul>
+											<li>Tiempo de respuesta de servicio</li>
+											<li>Procedimiento para el incremento de la gravedad de los problemas.</li>
+										</ul>
+								</p><p>
+									Los objetivos secundarios proactivos incluyen:
+								</p><p>
+									<ul>
+										<li>Detección del agente caido</li>
+										<li>Detección de errores en la red</li>
+										<li>Detección de la capacidad o del problema de rendimiento</li>
+									</ul>
+								</p>
+							</header>
+							<a href="#metricas" class="more scrolly">Leer más</a>
+						</div>
+					</section>
+					<section id="metricas" class="wrapper style1 special">
+						<div class="inner">
+							<header class="major">
+								<h2>Métricas del Indicador de rendimiento</h2>
+								<p>Nuestro nivel de servicio es cuantificable, de manera tal que el administrador pueda medir los niveles
+									de servicio, identificar los problemas de causas raíz del servicio que dificultan la meta principal de disponibilidad y desempeño y efectuar
+									mejoras dirigidas a objetivos específicos. A nivel general, las mediciones son sólo una herramienta que permite a los administradores de la red
+									para gestionar la coherencia en el nivel de los servicios y hacer mejoras. </p> <p>
+									La Disponibilidad y el funcionamiento de medición es una área descuidada a menudo en la métrica del nivel de servicio. Las organizaciones que
+									implementan exitosamente estas métricas usan dos métodos bastante simples. Un método consiste en enviar paquetes de ping de Protocolo de control
+									de mensajes de Internet (ICMP) desde una ubicación central en la red hacia los bordes. También puede obtener rendimiento a través de este método.
+									Las organizaciones que son exitosas con este método también agrupan agentes parecidos en "grupos de disponibilidad", como agentes LAN u
+									oficinas de campo domésticas. Esto es también atractivo porque las organizaciones tienen generalmente diversos objetivos de nivel de servicio para
+									diversas áreas geográficas o de negocio crítico de la red. Esto permite que las métricas promedien todos los agentes con el grupo de
+									disponibilidad para obtener un resultado razonable. </p> <p>
+									El otro método exitoso para calcular la disponibilidad es utilizar tickets de problema y una medición denominada minutos de agentes impactados
+									(IUM). Este método tabula la cantidad de agentes que han sido afectados por una interrupción y lo multiplica por la cantidad de minutos de la
+									interrupción. Cuando se expresa como un porcentaje de minutos totales en el periodo, se puede convertir fácilmente a disponibilidad. En ambos casos,
+									puede también ser útil identificar y medir la causa raíz del tiempo muerto para poder apuntar más fácilmente la mejora. Las categorías de causas de los
+									problemas incluyen problemas de hardware, software, link o portadora, potencia o entorno, fallas de cambios y errores de los agentes. </p> <p>
+									Nuestro programa es capaz de englobar estos dos en un solo y eficiente método que guarda en la base de datos y la actualiza en tiempo real.
+									y así se puedan generar automáticamente los ticketes de problemas para los eventos de red. Esto
+									ayuda a proporcionar la exactitud para identificar la hora de inicio de un problema.y ayudar a determinar los problemas potenciales.
+									Hay unos puntos a aclarar con base al desempeño del programa que se en listaran y se pide al administrador tenga en cuenta lo siguiente
+								</p>
+								<h2>Consideraciones</h2>
+								<ul>
+									<li>Las peticiones de tipo SNMP que se envían a los agentes se dividen en 2 tipos: Dinámicas y Estáticas: Las estáticas solo se efectúan una vez y
+										sirven para comprobar la conectabilidad y pintar la información que de antemano se sabe que no se necesita almacenar y por otra parte, las peticiones
+									dinámicas se mandan cada segundo y extraen del agente información predefinida que se almacenara en una base de datos tipo round robin para su posterior uso</li>
+									<li>Un hilo que trabaja en paralelo se encarga de las actualizaciones a las bases de datos y otro a generar las imágenes de las gráficas, el primero actualiza la
+									información cada segundo mientras que el otro genera las imágenes cada 30 segundos</li>
+								<li>Las imágenes no se generan correctamente : Esto es debido a que el programa genera las gráficas con ayuda de procesos externos al hilo fuente
+								pero hay ocasiones que el hilo fuente renderiza la pagina antes de que el proceso externo acabe, la solución a esto es simple y consta de recargar la pagina </li>
+								<li>Para las vistas de VistaAdministrador, VistaAgente y VistaAgenteIndividual hay un tiempo de demora de 5 segundos para poder verificar la conectabilidad y
+								revisar si hay hilos corriendo y terminar su ejecución esto en un periodo a mediano plazo se mejorara para tener una mayor eficiencia</li>
+								<li>Entendemos como agente no accecible cuando despues de mandar peticiones para la conectibilidad este no responde, a lo cual se informara al programa
+								y de rellenaran los datos con las leyendas de 'error'</li>
+								</ul>
+								</header>
+						</div>
+						<a href="#Continuidad" class="more scrolly">Leer más</a>
+					</section>
+					<section id="Continuidad"class="spotlight wrapper style5 special">
+						<div class="inner">
+							<h2>Continuidad</h2>
+							<p>PROVEEDOR se compromete a restablecer la comunicación entre los agentes y administradores ofertados,
+								ante la materialización de una contingencia grave de manera casi inmediata pero si es un problema que afecto
+								al servidor sera en un periodo no más de 2 días desde el momento del siniestro.</p>
+							<h2>Capacidad</h2>
+							<p>PROVEEDOR se compromete a gestionar la capacidad de los servicios prestados a
+								CLIENTE de acuerdo con sus necesidades. En cualquier caso el aumento de recursos
+								para la prestación del servicio estará siempre sujeto a autorización expresa de
+								CLIENTE</p>
+							<h2>Gestión de incidentes y peticiones del servicio</h2>
+							<p>
+								La prestación del servicio puede estar sujeta a incidentes que pueden comprometer
+								el mantenimiento de unos niveles de servicio adecuados. En este sentido y para
+								evitar que estos incidentes impacten en la menor medida posible en la prestación
+								del servicio, se establecen unos criterios de priorización de incidentes que permitan
+								ofrecer unos tiempos de respuesta y resolución correctos. Estos criterios de
+								priorización quedan recogidos en 2 tipos: Normal y críticos.
+								<ul>
+									<li>Normales: Incidentes que no implican la detención total del servicio o que
+									o comprometen la seguridad del mismo en cualquiera de sus parámetros.</li>
+									<li>Críticos: Incidentes que implican la detención total del servicio o que pueden
+									comprometer la seguridad del mismo</li>
+								</ul>
+								<table>
+									<tr>
+										<th>Tarea</th>
+										<th>T. de respuesta</th>
+										<th>T. de resolución</th>
+									</tr>
+									<tr>
+										<td>Peticiones</td>
+										<td>16 hrs</td>
+										<td>24 hrs</td>
+									</tr>
+									<tr>
+										<td>Incidencia normal</td>
+										<td>4 hrs</td>
+										<td>8 hrs</td>
+									</tr>
+									<tr>
+										<td>Incidencia crítica</td>
+										<td>2 hrs</td>
+										<td>4 hrs</td>
+									</tr>
+								</table>
+							</p>
+							<h2>Seguimiento del servicio</h2>
+							<p>Todas las tareas descritas en el de este acuerdo dispondrán de
+								monitorización que permita un seguimiento en tiempo real del grado de
+								cumplimiento de
+								los niveles de servicio.
+								Por otra parte, se proporcionará a CLIENTE informes cada minuto que indicarán el
+								rendimiento de los niveles de servicio</p>
+							<a href="#Perfiles" class="more scrolly">Leer más</a>
+						</div>
+					</section>
+					<section id="Perfiles" class="wrapper style4">
+						<div class="inner">
+							<header>
+								<h2>Creación de los perfiles</h2>
+								<p>
+									Ayuda de los perfiles de aplicación que el equipo de red entiende y que define los requisitos del nivel de servicio de la red
+									para las aplicaciones individuales. Esto lo ayuda a asegurarse de que la red soporte requisitos de aplicación individuales.
+									Los perfiles de aplicación pueden también servir como línea de fondo documentada para el soporte de servicio de la paguina cuando suceden errores
+									internos o en la administración de los administradores o agentes Es importante no sólo para la administración de nivel de servicio, sino también
+									para el desempeño de actividades de control y pruebas unitarias.
+									Las aplicaciones del sistema pueden incluir la distribución del software, la autenticación del administrador y la administración de los agentes y cuentas.
+									Un administrador y una aplicación o la aplicación de soporte de servidor deben crear el perfil de aplicación. Las nuevas aplicaciones pueden requerir el
+									uso de un analizador de protocolo</p>
+							</header>
+							<a href="#Disponibilidad" class="more scrolly">Leer más</a>
+						</div>
+					</section>
+					<section id="Disponibilidad" class="wrapper style3">
+						<div class="inner">
+							<header>
+								<h2>Disponibilidad y los estándares de rendimiento</h2>
+								<p>La Disponibilidad y los estándares de rendimiento fijaron las expectativas del los valores esperados para el agente.
+									Y de los cuales tomaremos a puntos particulares los valores por cada uno de ellos evaluando su desempeño en el HDD, RAM Y CPU.
+									Además de fijar las expectativas del servicio, Estos estándares nos servirán como punto de apoyo al evaluar el comportamiento y con base a esto hacer
+									una toma de decisiones de modo que el administrador y los grupos TIC, analicen y entiendan completamente la situación Los grupos
+									de administradores y de IT también deben comprender cómo se debe medir el estándar de servicio.En este momento, la organización debe tener un conocimiento de
+									los riesgos y de los apremios actuales del agente, una comprensión de la conducta de este, y una disponibilidad
+									teórica del análisis o línea de base de disponibilidad.</p>
+									<h2>Plan de Soporte de las Operaciones</h2>
+									<p>Hemos comentado el proceso de la etapa de las peticiones pero puede surgir la pregunta de como se analiza esta información, si bien a cada segundo se
+									obtiene información, esta sera se almacenara y enviara a la base de datos la junta todas las muestras de entrada y cada 60 segundo hace un promedio y determina
+									de una manera cuantificable el rendimiento obtenido en los últimos 60 segundo, posterior a esto se leerá el archivo y se extraerán todas las muestras desde la
+									primera hasta la ultima y se gráficaran los resultados </p>
+									<p>Este proceso sera manejado por el servidor de la pagina y se inicia cada que el administrador inicia sesión, pero tiene que saber que todos los datos generados como
+									las bases de datos, gráficas y las actualizaciones se borraran inmediatamente después de que el administrador haya dejado la sesión esto es por seguridad y privacidad,
+									haciendo que la información sea inaccesible por nadie que use el programa</p>
+									<p>Una vez generada estas gráficas se obtendrá su linea base para saber el estado en promedio del agente desde la primer muestra hasta la ultima la cual también sera
+									graficada y con base en mediciones que se presentan continuación el administrador realizara una toma de decisiones para determinar si el estado es conveniente</p>
+									<table>
+										<tr>
+											<th>Gravedad 1</th>
+											<th>Gravedad 2</th>
+											<th>Gravedad 3</th>
+										</tr>
+										<tr>
+											<td>
+												Es una etapa critica donde el programa ha determinado que el agente esta pasando por un momento de inactividad o se ha perdido la conexión entre el programa y
+												el agente
+											</td>
+											<td>
+												Esta etapa nos indica que el agente ha estado manteniendo una actividad y ha mostrado respuestas que se considera en el rango aceptable y con poco riesgo de fallos
+											</td>
+											<td>Esta etapa también critica nos dice que el agente ha tenido un comportamiento anómalo o que el este tiene una gran probabilidad de sufrir un fallo de tal manera
+												que es necesario que el cliente pueda revisar este lo más rápido posible para evitar inconvenientes
+											</td>
+										</tr>
+									</table>
+									<table>
+										<tr>
+											<th>Categoria</th>
+											<th>Método de detección</th>
+											<th>Umbral</th>
+											<th>Acción realizada</th>
+										</tr>
+										<tr>
+											<td>
+												Errores de software (caídas forzadas por el software), Agente remoto no responde, Inactividad
+											</td>
+											<td>
+												Consultas SNMP, el promedio de las respuestas obtenidas es muy bajo y choca con las lines base de bajo rendimiento
+											</td>
+											<td>5%</td>
+											<td>Enviar mensaje de aviso del servidor caido, el administrador tiene que levantar al agente lo antes posible generar graficas</td>
+										</tr>
+										<tr>
+											<td>
+												Buena respuesta por parte del agente, Activo con comportamiento esperado
+											</td>
+											<td>
+												Consultas SNMP, el promedio de las respuestas obtenidas es de un rango esperadoo y choca con las lines base de medio rendimiento
+											</td>
+											<td>60%</td>
+											<td>Generar las graficas del agente en cuestion, seguir trabajando con normalidad</td>
+										</tr>
+										<tr>
+											<td>
+												Agente saturado, comportamiento anomalo, el agente muestra valores muy altos y poco esperados
+											</td>
+											<td>
+												Consultas SNMP, el promedio de las respuestas obtenidas es muy alto y choca con las lines base de maximo rendimiento
+											</td>
+											<td>90%</td>
+											<td>Enviar mensaje de aviso del servidor caido, el administrador tiene que suspender y revisar el estado del agente  generar graficas</td>
+										</tr>
+									</table>
+									<h2>Sevicios ofecidos a nival de aplicacion</h2>
+									<table>
+										<tr>
+											<th>Protocolo</th>
+											<th>Tipo de servicio</th>
+											<th>Almacenamiento</th>
+										</tr>
+										<tr>
+											<td>FTP</td>
+											<td>Almacenamiento</td>
+											<td>500 Mb</td>
+										</tr>
+										<tr>
+											<td>DNS</td>
+											<td>De carga</td>
+											<td>500 Mb</td>
+										</tr>
+										<tr>
+											<td>SNMP</td>
+											<td>tiempo peticiones</td>
+											<td>500 Mb</td>
+										</tr>
+										<tr>
+											<td>SSH</td>
+											<td>Conexiones</td>
+											<td>20</td>
+										</tr>
+									</table>
+									<h2>Finalización</h2>
+
+										<p>
+											El acuerdo de nivel de servicio tendrá validez durante todo el periodo de tiempo que
+											dure la prestación del servicio.
+										</p>
+							</header>
+							<a href="#banner" class="more scrolly">Leer más</a>
+						</div>
+					</section>
+					<footer class="main-footer">
+				    <div class="pull-right hidden-xs">
+				      Administracion en servicios web
+				    </div>
+				    Copyright &copy; 2017 desarrollado por : Jose Ricardo todos los derechos reservados.
+				  </footer>
+			</div>
+			<script  src="{% static 'js/jquery.min.js' %}"></script>
+      <script  src="{% static 'js/skel.min.js' %}"></script>
+      <script  src="{% static 'js/jquery.scrolly.min.js' %}"></script>
+			<script  src="{% static 'js/jquery.scrollex.min.js' %}"></script>
+			<script  src="{% static 'js/util.js' %}"></script>
+			<script  src="{% static 'js/main.js' %}"></script>
+			<script src="{% static 'js/bootstrap.min.js' %}"></script>
+	</body>
+</html>

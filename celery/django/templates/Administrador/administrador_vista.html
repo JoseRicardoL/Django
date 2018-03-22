@@ -1,0 +1,155 @@
+{% extends "Base.html" %}
+{% block page_title %}Observium | Administrador{% endblock %}
+{% block navbar %}
+<div class="navbar-custom-menu">
+  <ul class="nav navbar-nav">
+    <li class="dropdown user user-menu">
+      <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+        Bienvenido, {{ user.username }}
+      </a>
+      <ul class="dropdown-menu">
+        <li class="user-header">
+          {% for administrador in administradores %}
+            {% if administrador.Administrador_id  == user.id %}
+            <img src="{{ administrador.Imagen.url }}" class="img-circle user-image img-responsive" alt="User Image">
+            {% endif %}
+          {% endfor %}
+          <p>
+            {% for administrador in administradores %}
+              {% if administrador.Administrador_id  == user.id %}
+                {{user.username}} - {{ administrador.Descripcion }}
+              {% endif %}
+            {% endfor %}
+            <small>Miebro desde {{ user.date_joined }}</small>
+          </p>
+        </li>
+        <li class="user-footer">
+          <div class="pull-right">
+            <a href="{% url "logout" %}" class="btn btn-default btn-flat">
+              logout
+            </a>
+          </div>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="#" data-toggle="control-sidebar"><i class="fa fa-gears"></i></a>
+    </li>
+  </ul>
+</div>
+{% endblock %}
+{% block userimage %}
+<div class="pull-left image">
+  {% for administrador in administradores %}
+    {% if administrador.Administrador_id  == user.id %}
+    <img src="{{ administrador.Imagen.url }}" class="img-circle user-image img-responsive" alt="User Image">
+    {% endif %}
+  {% endfor %}
+</div>
+{% endblock %}
+{% block contentheader %}
+<h1>
+  Resumen
+</h1>
+{% endblock %}
+{% block content %}
+<div class="container">
+  <div class="cont">
+    <div id="map"></div>
+    <br>
+    <div class="table-responsive">
+			<table class="table table-striped table-bordered table-hover table-condensed">
+			<tr class="active info">
+				<th>Tipo</th>
+				<th>Total</th>
+				<th>En linea</th>
+        <th>fuera de linea</th>
+			</tr>
+			<tr>
+				<td>agentes</td>
+				<td>{{resumen.0}}</td>
+				<td>{{resumen.1}}</td>
+				<td>{{resumen.2}}</td>
+			</tr>
+      <tr>
+				<td>puertos</td>
+				<td>{{puertos.0}}</td>
+				<td>{{puertos.1}}</td>
+				<td>{{puertos.2}}</td>
+			</tr>
+		</table>
+		</div>
+    <br>
+    {% if mostrar.0 == 1 %}
+      <h1>Agentes en linea</h1>
+    {% endif %}
+    <div class="row">
+      {% for agente in agentes %}
+        {% if agente.Administrador_Agente_id == user.id %}
+            {% for elemento in lista %}
+              {% if elemento.1 != "error" %}
+                {% if elemento.0 == agente.id %}
+                    <div class="elemento">
+                    <img src="/media/{{elemento.1}}.png" class="img-responsive center-block">
+                    <div class="hidden-xs">
+                      <h2>{{agente.NombreHost}}</h2>
+                      <h3>{{agente.Comunidad}}</h3>
+                    </div>
+                  </div>
+                {% endif %}
+              {% endif %}
+            {% endfor %}
+        {% endif %}
+      {% endfor %}
+    </div>
+    <br>
+    {% if mostrar.1 == 1 %}
+      <h1>Agentes fuera de linea</h1>
+    {% endif %}
+    <div class="row">
+      {% for agente in agentes %}
+        {% if agente.Administrador_Agente_id == user.id %}
+            {% for elemento in lista %}
+              {% if elemento.1 == "error" %}
+                {% if elemento.0 == agente.id %}
+                    <div class="elemento">
+                    <img src="/media/{{elemento.1}}.png" class="img-responsive center-block">
+                    <div class="hidden-xs">
+                      <h2>{{agente.NombreHost}}</h2>
+                      <h3>{{agente.Comunidad}}</h3>
+                    </div>
+                  </div>
+                {% endif %}
+              {% endif %}
+            {% endfor %}
+        {% endif %}
+      {% endfor %}
+    </div>
+    <br>
+  </div>
+</div>
+<div id="result"></div>
+
+{% endblock %}
+{% block pos_js %}
+<script>
+  function initMap() {
+    var uluru = {lat: 0, lng: 0};
+    var map = new google.maps.Map(document.getElementById('map'), {
+      zoom: 2,
+      center: uluru
+    });
+    {% for elemento in listar %}
+      var pos = {{elemento}};
+      var marker = new google.maps.Marker({
+        position: pos,
+        map: map
+      });
+    {% endfor %}
+
+  }
+</script>
+<script async defer
+src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBhAnNTqYmzEpHw__Te0xS_mIdYQ8vDF9I&callback=initMap">
+</script>
+{% endblock %}

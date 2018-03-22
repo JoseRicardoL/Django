@@ -1,0 +1,56 @@
+{% load staticfiles %}
+
+<!DOCTYPE html>
+<html >
+<head>
+  <meta charset="UTF-8">
+  <title>Login | Observium</title>
+  <link rel='stylesheet prefetch' href='http://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/themes/smoothness/jquery-ui.css'>
+  <link rel="stylesheet" href="{% static 'css/estilo_login.css' %}">
+</head>
+<body>
+  <div class='login'>
+    <div class='login_title'>
+      <span><h1>Bienvenido</h1></span>
+    </div>
+    <div class='login_fields'>
+      <form id="login" method="POST" class="well" >
+        {% csrf_token %}
+        <div class='login_fields__user'>
+          <div class='icon'>
+            <img src='https://s3-us-west-2.amazonaws.com/s.cdpn.io/217233/user_icon_copy.png'>
+          </div>
+          <input placeholder='Nombre del administrador' type='text' name="username">
+
+          </input>
+        </div>
+        <div class='login_fields__password'>
+          <div class='icon'>
+            <img src='https://s3-us-west-2.amazonaws.com/s.cdpn.io/217233/lock_icon_copy.png'>
+          </div>
+          <input placeholder='Contraseña' type='password' name="password" >
+
+        </div>
+        <div class='registro'>
+            <strong><p>Crea una cuenta: <a href=" {% url "Contrato"%} ">Registrate</a></p></strong>
+        </div>
+        <div class='login_fields__submit'>
+          <input type='submit' value='Entrar'>
+        </div>
+      </form>
+
+    </div>
+    <div class='success'>
+      <h2>Autenticacion Exitosa</h2>
+      <p>Bienvenido de vuelta</p>
+    </div>
+  </div>
+  <div class='authent'>
+    <img src='https://s3-us-west-2.amazonaws.com/s.cdpn.io/217233/puff.svg'>
+    <p>Autenticando...</p>
+  </div>
+  <script src='http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js'></script>
+  <script src='http://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js'></script>
+  <script  src="{% static 'js/login.js' %}"></script>
+</body>
+</html>

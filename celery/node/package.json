@@ -1,0 +1,15 @@
+{
+  "name": "Observium",
+  "version": "1.0.0",
+  "description": "Observium es un programa de administracion de servicios de red",
+  "main": "server.js",
+  "scripts": {
+    "prestart": "npm install",
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "jquery": "^3.1.0",
+    "redis": "^2.6.2",
+    "socket.io": "^1.4.5"
+  }
+}

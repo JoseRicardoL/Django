@@ -1,0 +1,11 @@
+celery[redis]
+django
+redis
+geoip2
+mysqlclient
+Pillow
+pysnmp
+pygeoip
+sorl-thumbnail
+rrdtool
+easysnmp
