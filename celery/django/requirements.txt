@@ -1,5 +1,5 @@
-celery[redis]
 django
+django-celery[redis]
 redis
 geoip2
 mysqlclient
@@ -9,3 +9,4 @@ pygeoip
 sorl-thumbnail
 rrdtool
 easysnmp
+djangorestframework

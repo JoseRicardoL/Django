@@ -2,10 +2,9 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
-
 from Agente.views import staff_required
 from Agente.models import Agente
-
+from Agente.serializers import AgenteSerializer
 from Observium.functions import (sistemaop, listar_posiciones, get_SNMP,
                                  walk_SNMP, listaWalk)
 
@@ -24,6 +23,9 @@ def VistaAdministrador(request):
         Administrador_id=request.user.id)
     agentes = Agente.objects.filter(
         Administrador_Agente_id=request.user.id)
+    for agente in agentes:
+        serializer = AgenteSerializer(agente)
+        print(serializer.data)
     lista = listar_posiciones(agentes)
     respuesta = get_SNMP(agentes, listaGet)
     lista2, resumen = sistemaop(respuesta)
@@ -44,7 +46,6 @@ def VistaAdministrador(request):
             if puerto == '3':
                 puertos[0] += 1
                 puertos[3] += 1
-
     contexto = {'administradores': administrador,
                 'agentes': agentes,
                 'listar': lista,

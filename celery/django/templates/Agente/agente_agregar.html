@@ -83,6 +83,24 @@
     </div>
     <button type="submit" class="btn btn-default btn-block">Guardar</button>
   </form>
+  <div id="result"></div>
 </div>
 </div>
+<script>
+    var socket = io('ws://localhost:3000');
+    var submit = $('input[type="submit"]');
+
+    submit.on('click', function (event) {
+      $.ajax({
+        type: 'POST',
+        url: "{% url 'AgregarAgente' %}",
+        data: $('form').serialize(),
+        success: function(celeryTaskId)
+        {
+          socket.emit('subscribe', celeryTaskId);
+        }
+      });
+      event.preventDefault();
+    });
+  </script>
 {% endblock %}
