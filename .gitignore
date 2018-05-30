@@ -1,3 +1,5 @@
 *.pyc
 *.xml
 *.rrd
+__pycache__/*
+node_modules/*
