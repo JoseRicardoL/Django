@@ -1,3 +1,4 @@
+from __future__ import absolute_import, unicode_literals
 from celery.schedules import crontab
 from celery import Celery
 import os
@@ -8,20 +9,19 @@ from django.conf import settings  # noqa
 
 app = Celery('Observium')
 
-app.config_from_object('django.conf:settings')
+app.config_from_object('django.conf:settings', namespace='CELERY')
 
-app.autodiscover_tasks(lambda: settings.INSTALLED_APPS)
+app.autodiscover_tasks()
 
 
-app.conf.update(
-    BROKER_URL='redis://redis:6379/0',
-    CELERY_RESULT_BACKEND='redis://redis:6379/0',
-    CELERY_TIMEZONE='America/Mexico_City',
-    CELERY_BEAT_SCHEDULE={
-        'actualizarBDRRD': {
-            'task': 'Administrador.tasks.actualizarBDRRD',
-            'schedule': crontab(minute=1),
-        }
+@app.task(bind=True)
+def debug_task(self):
+    print('Request: {0!r}'.format(self.request))
+
+
+app.conf.beat_schedule = {
+    'actualizarBDRRD': {
+        'task': 'actualizarBDRRD',
+        'schedule': crontab(),
     },
-)
-# 2 diapositivas, 2 tareas
+}

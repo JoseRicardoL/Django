@@ -2,7 +2,7 @@ from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth.decorators import login_required
 from Observium.functions import get_SNMP, walk_SNMP, listaWalk, listadeso
 from Administrador.models import Administrador
-from Administrador.tasks import crearBDRRD, actualizarBDRRD
+from Administrador.tasks import crearBDRRD
 from .serializers import AgenteSerializer
 from django.shortcuts import render, redirect
 from .forms import FormAgente
@@ -112,18 +112,14 @@ def AgregarAgente(request):
         Administrador_id=request.user.id)
     agente = Agente.objects.filter(
         Administrador_Agente_id=request.user.id)
-    print("******************", agente)
     if request.method == 'POST':
         form = FormAgente(request.POST)
         print(form)
         if form.is_valid():
             form.save()
         for elemento in agente:
-            print("=======================", elemento)
             serializer = AgenteSerializer(elemento)
-            print(serializer.data)
             crearBDRRD.delay(serializer.data)
-            actualizarBDRRD.delay(serializer.data)
         return redirect('VistaAgente')
     else:
         form = FormAgente()
