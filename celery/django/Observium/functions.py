@@ -46,6 +46,22 @@ def get_SNMP(agentes, listaGet):
     return respuesta
 
 
+def get_SNMP_task(agente, oid_1, oid_2):
+    r_1 = 0
+    r_2 = 0
+    try:
+        r_1 = (snmp_get(oid_1, hostname=agente.Ip,
+                        community=agente.Comunidad,
+                        version=agente.Protocolo)).value
+        r_2 = (snmp_get(oid_2, hostname=agente.Ip,
+                        community=agente.Comunidad,
+                        version=agente.Protocolo)).value
+    except Exception:
+        r_1 = 'error'
+        r_2 = 'error'
+    return r_1, r_2
+
+
 def walk_SNMP(agentes, listaOID, tipodewalk):
     superlista = []
     for agente in agentes:

@@ -29,3 +29,14 @@ class Agente(models.Model):
     class Meta:
         verbose_name = 'Agente'
         verbose_name_plural = 'Agentes'
+
+
+def convertSelializerAgenteToAgente(agenteSerializer):
+    return Agente(NombreHost=agenteSerializer['NombreHost'],
+                  Ip=agenteSerializer['Ip'],
+                  Ip_publica=agenteSerializer['Ip_publica'],
+                  Protocolo=agenteSerializer['Protocolo'],
+                  Puerto=agenteSerializer['Puerto'],
+                  Comunidad=agenteSerializer['Comunidad'],
+                  Administrador_Agente_id=agenteSerializer[
+                      'Administrador_Agente_id'])

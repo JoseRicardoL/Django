@@ -1,12 +1,14 @@
 from __future__ import absolute_import, unicode_literals
+from Agente.models import Agente, convertSelializerAgenteToAgente
 from Agente.serializers import AgenteSerializer
+from Observium.functions import get_SNMP_task
 from .constants import monitoreosSNMP
 from celery.decorators import task
-from Agente.models import Agente
-from easysnmp import snmp_get
+from .aberraciones import main
 from .crearRRD import crear
 import rrdtool
 import redis
+import time
 import os
 
 redis_client = redis.StrictRedis(host='redis', port=6379, db=0)
@@ -41,31 +43,28 @@ def actualizarBDRRD():
 
 
 @task(name="subActualizar")
-def subActualizar(agente):
+def subActualizar(agenteSerializer):
     enddate = int(time.mktime(time.localtime()))
     begdate = enddate - (86400)
-    nombreHost = agente['NombreHost']
-    comunidad = agente['Comunidad']
-    protocolo = agente['Protocolo']
-    ip = agente['Ip']
-    direcciones = []
+    direcciones = {}
+    agente = convertSelializerAgenteToAgente(agenteSerializer)
+    nombreHost = agente.NombreHost
+    comunidad = agente.Comunidad
+    ip = agente.Ip
     ip = ip.replace(".", "")
     rrd = path+"/static/files/"+comunidad+"/"+ip+"/"+nombreHost+"/"
     os.chdir(rrd+"rrd/")
     for elemento in monitoreosSNMP:
-        direcciones.append(rrd+"rrd/"+elemento[0]+".rrd")
         nombre = elemento[0]+".rrd"
-        total_input_traffic = int((snmp_get(
-            elemento[1], hostname=ip, community=comunidad,
-            version=protocolo)).value)
-        total_output_traffic = int((snmp_get(
-            elemento[1], hostname=ip, community=comunidad,
-            version=protocolo)).value)
-        valor = str(rrdtool.last(nombre)+300)+":"+str(total_input_traffic)+':'
-        +str(total_output_traffic)
-        ret = rrdtool.update(nombre, valor)
-        if not ret:
-            rrdtool.dump(nombre, elemento[0]+'.xml')
-            print("actualizado: ", elemento[0])
-        else:
-            print(rrdtool.error())
+        direcciones.update({rrd+"rrd/"+elemento[0]: 0})
+        total_input, total_output = get_SNMP_task(
+            agente, elemento[1], elemento[2])
+        if total_input is not "error" and total_output is not "error":
+            valor = str(rrdtool.last(nombre)+300)+":"+str(
+                total_input)+':'+str(total_output)
+            ret = rrdtool.update(nombre, valor)
+            if not ret:
+                rrdtool.dump(nombre, elemento[0]+'.xml')
+            else:
+                print(rrdtool.error())
+    main(rrd, begdate, enddate, direcciones)

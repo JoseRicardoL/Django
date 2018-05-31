@@ -25,8 +25,4 @@ monitoreosSNMP = [['trafico',
                   ['MemUsada',
                    '1.3.6.1.4.1.2021.4.6.0',
                    '1.3.6.1.4.1.2021.4.6.0',
-                   'Memoria total usada'],
-                  ['MemLibre',
-                   ' 1.3.6.1.4.1.2021.4.11.0',
-                   ' 1.3.6.1.4.1.2021.4.11.0',
-                   'Memoria libre']]
+                   'Memoria total usada']]

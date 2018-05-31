@@ -1,6 +1,6 @@
 from email.mime.multipart import MIMEMultipart
 from email.mime.image import MIMEImage
-from correo import correoAdmin
+from .correo import correoAdmin
 import tempfile
 import smtplib
 import rrdtool
@@ -12,10 +12,8 @@ def gen_image(rrdpath, pngpath, fname, width, height, begdate, enddate):
     print("creando imagen")
     ldaybeg = str(begdate)
     ldayend = str(enddate)
-    endd_str = time.strftime("%d/%m/%Y %H:%M:%S", (
-        time.localtime(int(enddate)))).replace(':', '\:')
-    begd_str = time.strftime("%d/%m/%Y %H:%M:%S", (
-        time.localtime(int(begdate)))).replace(':', '\:')
+    endd_str = time.strftime("%d/%m/%Y %H:%M:%S", (time.localtime(int(enddate)))).replace(':', '\:')
+    begd_str = time.strftime("%d/%m/%Y %H:%M:%S", (time.localtime(int(begdate)))).replace(':', '\:')
     title = 'Chart for: '+fname.split('.')[0]
     pngfname = pngpath+fname.split('.')[0]+'.png'
     rrdfname = rrdpath+fname
@@ -30,15 +28,17 @@ def gen_image(rrdpath, pngpath, fname, width, height, begdate, enddate):
     rrdtool.graph(pngfname,
                   '--width', width, '--height', height,
                   '--start', str(begdate), '--end', '+2w', '--title='+title,
-                  '--lower-limit', '0', '--slope-mode',
+                  '--lower-limit', '0',
+                  '--slope-mode',
                   'COMMENT:From\:'+begd_str+'  To\:'+endd_str+'\\c',
                   'DEF:value='+rrdfname+':inoctets:AVERAGE',
                   'DEF:pred='+rrdfname+':inoctets:HWPREDICT',
                   'DEF:dev='+rrdfname+':inoctets:DEVPREDICT',
                   'DEF:fail='+rrdfname+':inoctets:FAILURES',
-                  'DEF:yvalue='+rrdfname+':inoctets:AVERAGE:start='
-                  ''+ldaybeg+':end='+ldayend, 'SHIFT:yvalue:86400',
-                  'CDEF:upper=pred,dev,2,*,+', 'CDEF:lower=pred,dev,2,*,-',
+                  'DEF:yvalue='+rrdfname+':inoctets:AVERAGE:start='+ldaybeg+':end='+ldayend,
+                  'SHIFT:yvalue:86400',
+                  'CDEF:upper=pred,dev,2,*,+',
+                  'CDEF:lower=pred,dev,2,*,-',
                   'CDEF:ndev=dev,-1,*',
                   'CDEF:tot=value,'+multip+',*',
                   'CDEF:ytot=yvalue,'+multip+',*',
@@ -66,9 +66,7 @@ def check_aberration(rrdpath, fname, direcciones):
     lastupdate = info['last_update']
     previosupdate = str((lastupdate - rrdstep*100) - 1)
     graphtmpfile = tempfile.NamedTemporaryFile()
-    values = rrdtool.graph(
-        graphtmpfile.name, 'DEF:f0='+rrdfilename+':inoctets:FAILURES:start='
-        ''+previosupdate+':end=+1w', 'PRINT:f0:LAST:%1.0lf\n')
+    values = rrdtool.graph(graphtmpfile.name, 'DEF:f0='+rrdfilename+':inoctets:FAILURES:start='+previosupdate+':end=+1w', 'PRINT:f0:LAST:%1.0lf\n')
     flast = int(values[2][0])
     if (flast == 1):
         if direcciones[rrdfilename] == 0:
@@ -83,7 +81,6 @@ def check_aberration(rrdpath, fname, direcciones):
         else:
             ab_status = 0
     print("aberr: ", direcciones)
-    print(ab_status)
     return ab_status, direcciones
 
 
@@ -107,38 +104,34 @@ def send_alert_attached(subject, flist, fname):
     print("enviado")
 
 
-def main(paths, begdate, enddate, direcciones):
+def main(path, begdate, enddate, direcciones):
     begin_ab = []
     begin_fname = []
     end_ab = []
     end_fname = []
     width = '500'
     height = '200'
-    for path in paths:
-        rrdpath = path+"rrd/"
-        pngpath = path+"img/"
-        for fname in os.listdir(rrdpath):
-            if fname.endswith(".rrd"):
-                gen_image(rrdpath, pngpath, fname, width, height, begdate,
-                          enddate)
-    for path in paths:
-        rrdpath = path+"rrd/"
-        pngpath = path+"img/"
-        for fname in os.listdir(rrdpath):
-            if fname.endswith(".rrd"):
-                print("check: ", fname)
-                if rrdpath+fname not in direcciones:
-                    direcciones[rrdpath+fname] = 0
-                print("main: ", direcciones)
-                ab_status, direcciones = check_aberration(rrdpath, fname,
-                                                          direcciones)
-                print(ab_status)
-                if ab_status == 1:
-                    begin_ab.append(pngpath)
-                    begin_fname.append(fname)
-                if ab_status == 2:
-                    end_ab.append(pngpath)
-                    end_fname.append(fname)
+    rrdpath = path+"rrd/"
+    pngpath = path+"img/"
+    crearDirectorio(rrdpath)
+    crearDirectorio(pngpath)
+    for fname in os.listdir(rrdpath):
+        if fname.endswith(".rrd"):
+            gen_image(rrdpath, pngpath, fname, width, height, begdate, enddate)
+    for fname in os.listdir(rrdpath):
+        if fname.endswith(".rrd"):
+            print("check: ", fname)
+            if rrdpath+fname not in direcciones:
+                direcciones[rrdpath+fname] = 0
+            print("main: ", direcciones)
+            ab_status, direcciones = check_aberration(rrdpath, fname, direcciones)
+            print(ab_status)
+            if ab_status == 1:
+                begin_ab.append(pngpath)
+                begin_fname.append(fname)
+            if ab_status == 2:
+                end_ab.append(pngpath)
+                end_fname.append(fname)
 
     if len(begin_ab) > 0:
         send_alert_attached('New aberrations detected', begin_ab, begin_fname)
@@ -150,3 +143,8 @@ def main(paths, begdate, enddate, direcciones):
         print ('Abberations gone')
         end_ab = []
         end_fname = []
+
+
+def crearDirectorio(path):
+    if not os.path.exists(path):
+        os.makedirs(path)
