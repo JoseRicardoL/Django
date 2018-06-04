@@ -1,5 +1,11 @@
 import rrdtool
 
+'''
+    ======= contribución ========
+    author : Oscar Huitzilin Chavez Barrera
+    github : Huitzoo
+'''
+
 
 def crear(nombre):
     print(nombre)

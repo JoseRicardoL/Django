@@ -52,7 +52,7 @@
 {% block content %}
 <div class="container">
   <h2>Vista individual</h2>
-  <div class="row agente">
+  <div class="row">
     <div class="col-sm-3">
       {% for elemento in lista %}
         {% if elemento.0 == agente.id %}
@@ -96,14 +96,13 @@
       {% endfor %}
     </div>
   </div>
-  <div class="row agente">
+  <div class="row">
     <h2>Graficas</h2>
-    <div class="col-sm-6">
-      {% for elemento in cadena %}
-      <h3>{{elemento.0}}</h3>
-      <img src="{{elemento.1}}" alt="">
-      {% endfor %}
-
-    </div>
+    {% for elemento in monitoreosSNMP %}
+      <div class="col-sm-6">
+          <h3>{{elemento.3}}</h3>
+          <img src="{{ imagenes }}{{ elemento.0 }}.png" class="img-responsive">
+      </div>
+    {% endfor %}
 </div>
 {% endblock %}

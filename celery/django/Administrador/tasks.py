@@ -1,7 +1,7 @@
 from __future__ import absolute_import, unicode_literals
 from Agente.models import Agente, convertSelializerAgenteToAgente
 from Agente.serializers import AgenteSerializer
-from Observium.functions import get_SNMP_task
+from Observium.functions import get_SNMP_task, walk_SNMP_task
 from .constants import monitoreosSNMP
 from celery.decorators import task
 from .aberraciones import main
@@ -11,6 +11,12 @@ import redis
 import time
 import os
 
+'''
+    ======= contribución ========
+    author : Oscar Huitzilin Chavez Barrera
+    github : Huitzoo
+'''
+
 redis_client = redis.StrictRedis(host='redis', port=6379, db=0)
 path = os.getcwd()
 request = ""
@@ -18,16 +24,24 @@ request = ""
 
 @task(name="crearBDRRD")
 def crearBDRRD(agentes):
-    nombreHost = agentes['NombreHost']
-    comunidad = agentes['Comunidad']
+    agente = convertSelializerAgenteToAgente(agentes)
     ip = agentes['Ip']
     ip = ip.replace(".", "")
-    rrd = path+"/static/files/"+comunidad+"/"+ip+"/"+nombreHost+"/rrd/"
+    rrd = '{}/static/files/{}/{}/{}/rrd/'.format(
+        path, agente.Comunidad, agente.Ip.replace(".", ""), agente.NombreHost)
     if not os.path.exists(rrd):
         os.makedirs(rrd)
     os.chdir(rrd)
     for elemento in monitoreosSNMP:
         nombre = elemento[0]+".rrd"
+        error = crear(nombre)
+        if error != "cool":
+            print("Hubo un error: ", error)
+            break
+    walk = walk_SNMP_task(agente, '1.3.6.1.4.1.2021.9.1.3')
+    for elemento in walk:
+        nombre = elemento.value.replace("/", "_")+".rrd"
+        nombre = "Disk_"+nombre
         error = crear(nombre)
         if error != "cool":
             print("Hubo un error: ", error)

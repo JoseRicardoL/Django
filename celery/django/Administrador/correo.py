@@ -1,3 +1,10 @@
+'''
+    ======= contribución ========
+    author : Oscar Huitzilin Chavez Barrera
+    github : Huitzoo
+'''
+
+
 class correoAdmin:
     def __init__(self):
         self.mailsender = "pruebasredes3@gmail.com"

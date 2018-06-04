@@ -6,17 +6,9 @@ from Administrador.tasks import crearBDRRD
 from .serializers import AgenteSerializer
 from django.shortcuts import render, redirect
 from .forms import FormAgente
+from Administrador.constants import lista_oid, monitoreosSNMP
 from .models import Agente
 import logging
-
-lista_oid = ['1.3.6.1.2.1.1.1.0',
-             '1.3.6.1.2.1.1.3.0',
-             '1.3.6.1.2.1.1.5.0',
-             '1.3.6.1.2.1.1.4.0',
-             '1.3.6.1.2.1.1.6.0',
-             '1.3.6.1.2.1.2.1.0',
-             '1.3.6.1.2.1.2.2.1.10.3',
-             '1.3.6.1.2.1.2.2.1.16.3']
 
 logging.basicConfig(level=logging.INFO,
                     format='[%(levelname)s] (%(threadName)-s) %(message)s')
@@ -94,12 +86,16 @@ def IndividualAgente(request, Id):
             seg = trans-((hor*3600)+(minu*60))
             dias.append([elemento[0],
                          (str(hor)+"h "+str(minu)+"m "+str(seg)+"s")])
+    imagenes = '/static/files/{}/{}/{}/img/'.format(
+        agente.Comunidad, agente.Ip.replace(".", ""), agente.NombreHost)
     contexto = {'administradores': administrador,
                 'agentes': agentes,
                 'agente': agente,
                 'respuesta': respuesta,
                 'lista': sis,
-                'dias': dias}
+                'dias': dias,
+                'imagenes': imagenes,
+                'monitoreosSNMP': monitoreosSNMP}
     return render(request,
                   'Agente/agente_individual.html',
                   contexto)

@@ -7,6 +7,12 @@ import rrdtool
 import time
 import os
 
+'''
+    ======= contribución ========
+    author : Oscar Huitzilin Chavez Barrera
+    github : Huitzoo
+'''
+
 
 def gen_image(rrdpath, pngpath, fname, width, height, begdate, enddate):
     print("creando imagen")

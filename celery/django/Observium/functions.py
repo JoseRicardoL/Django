@@ -1,4 +1,4 @@
-from easysnmp import snmp_get, Session
+from easysnmp import snmp_get, Session, snmp_walk
 from Observium.settings import BASE_DIR
 import pygeoip
 
@@ -60,6 +60,16 @@ def get_SNMP_task(agente, oid_1, oid_2):
         r_1 = 'error'
         r_2 = 'error'
     return r_1, r_2
+
+
+def walk_SNMP_task(agente, oid):
+    try:
+        r_1 = (snmp_walk(oid, hostname=agente.Ip,
+                         community=agente.Comunidad,
+                         version=agente.Protocolo))
+    except Exception:
+        r_1 = 'error'
+    return r_1
 
 
 def walk_SNMP(agentes, listaOID, tipodewalk):
