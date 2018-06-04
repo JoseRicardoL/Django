@@ -25,8 +25,6 @@ request = ""
 @task(name="crearBDRRD")
 def crearBDRRD(agentes):
     agente = convertSelializerAgenteToAgente(agentes)
-    ip = agentes['Ip']
-    ip = ip.replace(".", "")
     rrd = '{}/static/files/{}/{}/{}/rrd/'.format(
         path, agente.Comunidad, agente.Ip.replace(".", ""), agente.NombreHost)
     if not os.path.exists(rrd):
@@ -62,11 +60,8 @@ def subActualizar(agenteSerializer):
     begdate = enddate - (86400)
     direcciones = {}
     agente = convertSelializerAgenteToAgente(agenteSerializer)
-    nombreHost = agente.NombreHost
-    comunidad = agente.Comunidad
-    ip = agente.Ip
-    ip = ip.replace(".", "")
-    rrd = path+"/static/files/"+comunidad+"/"+ip+"/"+nombreHost+"/"
+    rrd = '{}/static/files/{}/{}/{}/'.format(
+        path, agente.Comunidad, agente.Ip.replace(".", ""), agente.NombreHost)
     os.chdir(rrd+"rrd/")
     for elemento in monitoreosSNMP:
         nombre = elemento[0]+".rrd"
