@@ -1,12 +1,14 @@
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth.decorators import login_required
-from Observium.functions import get_SNMP, walk_SNMP, listaWalk, listadeso
+from Observium.functions import (get_SNMP, walk_SNMP, listaWalk,
+                                 listadeso, walk_SNMP_task)
 from Administrador.models import Administrador
 from Administrador.tasks import crearBDRRD
 from .serializers import AgenteSerializer
 from django.shortcuts import render, redirect
 from .forms import FormAgente
-from Administrador.constants import lista_oid, monitoreosSNMP
+from Administrador.constants import (lista_oid, monitoreosSNMP,
+                                     rendimientoSNMP, serviciosSNMP)
 from .models import Agente
 import logging
 
@@ -72,6 +74,7 @@ def IndividualAgente(request, Id):
     agentes = Agente.objects.filter(
         Administrador_Agente_id=request.user.id)
     dias = []
+    lista_discos = []
     agente = Agente.objects.get(id=Id)
     respuesta = get_SNMP([agente], lista_oid)
     lista = [[elemento[0], elemento[1][0]] for elemento in respuesta]
@@ -88,6 +91,9 @@ def IndividualAgente(request, Id):
                          (str(hor)+"h "+str(minu)+"m "+str(seg)+"s")])
     imagenes = '/static/files/{}/{}/{}/img/'.format(
         agente.Comunidad, agente.Ip.replace(".", ""), agente.NombreHost)
+    walk = walk_SNMP_task(agente, '1.3.6.1.4.1.2021.9.1.2')
+    for elemento in walk:
+        lista_discos.append('Disk{}'.format(elemento.value.replace("/", "_")))
     contexto = {'administradores': administrador,
                 'agentes': agentes,
                 'agente': agente,
@@ -95,7 +101,10 @@ def IndividualAgente(request, Id):
                 'lista': sis,
                 'dias': dias,
                 'imagenes': imagenes,
-                'monitoreosSNMP': monitoreosSNMP}
+                'monitoreosSNMP': monitoreosSNMP,
+                'rendimientoSNMP': rendimientoSNMP,
+                'serviciosSNMP': serviciosSNMP,
+                'lista_discos': lista_discos}
     return render(request,
                   'Agente/agente_individual.html',
                   contexto)

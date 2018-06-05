@@ -96,13 +96,43 @@
       {% endfor %}
     </div>
   </div>
+  <h1>Graficas</h1>
+
   <div class="row">
-    <h2>Graficas</h2>
+    <h2>Monitoreo</h2>
     {% for elemento in monitoreosSNMP %}
       <div class="col-sm-6">
           <h3>{{elemento.3}}</h3>
           <img src="{{ imagenes }}{{ elemento.0 }}.png" class="img-responsive">
       </div>
     {% endfor %}
-</div>
+  </div>
+  <div class="row">
+    <h2>Rendimiento</h2>
+    {% for elemento in rendimientoSNMP %}
+      <div class="col-sm-6">
+          <h3>{{elemento.3}}</h3>
+          <img src="{{ imagenes }}{{ elemento.0 }}.png" class="img-responsive">
+      </div>
+    {% endfor %}
+  </div>
+  <div class="row">
+    <h2>Servicios</h2>
+    {% for elemento in serviciosSNMP %}
+      <div class="col-sm-6">
+          <h3>{{elemento.3}}</h3>
+          <img src="{{ imagenes }}{{ elemento.0 }}.png" class="img-responsive">
+      </div>
+    {% endfor %}
+  </div>
+  <div class="row">
+    <h2>Discos</h2>
+    {% for elemento in lista_discos %}
+      <div class="col-sm-6">
+          <h3>{{elemento}}</h3>
+          <img src="{{ imagenes }}{{ elemento }}.png" class="img-responsive">
+      </div>
+    {% endfor %}
+  </div>
+
 {% endblock %}

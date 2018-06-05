@@ -1,3 +1,4 @@
+from .constants import monitoreosSNMP, rendimientoSNMP, serviciosSNMP
 from email.mime.multipart import MIMEMultipart
 from email.mime.image import MIMEImage
 from .correo import correoAdmin
@@ -14,7 +15,7 @@ import os
 '''
 
 
-def gen_image(rrdpath, pngpath, fname, width, height, begdate, enddate):
+def gen_image_servicio(rrdpath, pngpath, fname, width, height, begdate, enddate):
     print("creando imagen")
     ldaybeg = str(begdate)
     ldayend = str(enddate)
@@ -61,6 +62,55 @@ def gen_image(rrdpath, pngpath, fname, width, height, begdate, enddate):
                   'LINE1:pred#ff00FF:"Forecast "',
                   'LINE1:ndev#000000:"Deviation "',
                   'LINE1:lower#00FF00:"Lower Bound "')
+
+
+def gen_image_monitoreo(rrdpath, pngpath, fname, width, height, begdate, enddate):
+    print("creando imagen")
+    endd_str = time.strftime("%d/%m/%Y %H:%M:%S", (time.localtime(int(enddate)))).replace(':', '\:')
+    begd_str = time.strftime("%d/%m/%Y %H:%M:%S", (time.localtime(int(begdate)))).replace(':', '\:')
+    title = 'Chart for: '+fname.split('.')[0]
+    pngfname = pngpath+fname.split('.')[0]+'.png'
+    rrdfname = rrdpath+fname
+    print(rrdfname)
+    rrdtool.graph(pngfname,
+                  '--width', width, '--height', height,
+                  '--start', str(begdate), '--end', '+2w', '--title='+title,
+                  '--lower-limit', '0',
+                  '--slope-mode',
+                  'COMMENT:From\:'+begd_str+'  To\:'+endd_str+'\\c',
+                  'DEF:inoctets='+rrdfname+':inoctets:AVERAGE',
+                  'DEF:outoctets='+rrdfname+':outoctets:AVERAGE',
+                  'AREA:inoctets#00FF00:"In\:"',
+                  'LINE1:outoctets#0000FF:"Out "')
+
+
+def gen_image_rendimiento(rrdpath, pngpath, fname, width, height, begdate, enddate):
+    print("creando imagen")
+    endd_str = time.strftime("%d/%m/%Y %H:%M:%S", (time.localtime(int(enddate)))).replace(':', '\:')
+    begd_str = time.strftime("%d/%m/%Y %H:%M:%S", (time.localtime(int(begdate)))).replace(':', '\:')
+    title = 'Chart for: '+fname.split('.')[0]
+    pngfname = pngpath+fname.split('.')[0]+'.png'
+    rrdfname = rrdpath+fname
+    print(rrdfname)
+    rrdtool.graph(pngfname,
+                  '--width', width, '--height', height,
+                  '--start', str(begdate), '--end', '+2w', '--title='+title,
+                  '--lower-limit', '0',
+                  '--slope-mode',
+                  'COMMENT:From\:'+begd_str+'  To\:'+endd_str+'\\c',
+                  "DEF:inoctets="+rrdfname+":inoctets:AVERAGE",
+                  "DEF:a="+rrdfname+":inoctets:AVERAGE:step=300",
+                  "VDEF:slope=a,LSLSLOPE",
+                  "VDEF:cons=a,LSLINT",
+                  "CDEF:lsl2=a,POP,slope,COUNT,*,cons,+",
+                  "CDEF:lsl3=a,POP,2,COUNT,+",
+                  "CDEF:pred=lsl2,90,100,LIMIT",
+                  "VDEF:minpred=pred,FIRST",
+                  "VDEF:maxpred=pred,LAST",
+                  "AREA:a#00B2EE:Ram",
+                  "AREA:pred#BCD2EE",
+                  "LINE:lsl2#ff0000:mejor ajuste",
+                  "LINE:lsl3#ff00ff:recorrimiento de ajuste en 2")
 
 
 def check_aberration(rrdpath, fname, direcciones):
@@ -123,21 +173,40 @@ def main(path, begdate, enddate, direcciones):
     crearDirectorio(pngpath)
     for fname in os.listdir(rrdpath):
         if fname.endswith(".rrd"):
-            gen_image(rrdpath, pngpath, fname, width, height, begdate, enddate)
+            archivo = fname.split(".")[0]
+            for elemento in serviciosSNMP:
+                if archivo in elemento:
+                    gen_image_servicio(rrdpath, pngpath, fname,
+                                       width, height, begdate, enddate)
+            for elemento in monitoreosSNMP:
+                if archivo in elemento:
+                    gen_image_monitoreo(rrdpath, pngpath, fname,
+                                        width, height, begdate, enddate)
+            for elemento in rendimientoSNMP:
+                if archivo in elemento:
+                    gen_image_rendimiento(rrdpath, pngpath, fname,
+                                          width, height, begdate, enddate)
+            if "Disk" in archivo:
+                gen_image_rendimiento(rrdpath, pngpath, fname,
+                                      width, height, begdate, enddate)
     for fname in os.listdir(rrdpath):
         if fname.endswith(".rrd"):
-            print("check: ", fname)
-            if rrdpath+fname not in direcciones:
-                direcciones[rrdpath+fname] = 0
-            print("main: ", direcciones)
-            ab_status, direcciones = check_aberration(rrdpath, fname, direcciones)
-            print(ab_status)
-            if ab_status == 1:
-                begin_ab.append(pngpath)
-                begin_fname.append(fname)
-            if ab_status == 2:
-                end_ab.append(pngpath)
-                end_fname.append(fname)
+            archivo = fname.split(".")[0]
+            for elemento in serviciosSNMP:
+                if archivo in elemento:
+                    print("check: ", fname)
+                    if rrdpath+fname not in direcciones:
+                        direcciones[rrdpath+fname] = 0
+                    print("main: ", direcciones)
+                    ab_status, direcciones = check_aberration(
+                        rrdpath, fname, direcciones)
+                    print(ab_status)
+                    if ab_status == 1:
+                        begin_ab.append(pngpath)
+                        begin_fname.append(fname)
+                    if ab_status == 2:
+                        end_ab.append(pngpath)
+                        end_fname.append(fname)
 
     if len(begin_ab) > 0:
         send_alert_attached('New aberrations detected', begin_ab, begin_fname)
