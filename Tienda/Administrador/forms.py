@@ -1,6 +1,6 @@
 from django import forms
 from .models import Perfil
-from apps.Producto.models import (Producto,
+from Producto.models import (Producto,
                                   Categoria,
                                   CategoriaPadre,
                                   MetodoDePago,

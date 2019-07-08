@@ -1,8 +1,6 @@
-from apps.Producto.models import (Producto,
-                                  CategoriaPadre,
-                                  Carrito)
+from Producto.models import Producto, CategoriaPadre, Carrito
 from django.shortcuts import render, redirect
-from apps.Administrador.forms import CarritoForm
+from Administrador.forms import CarritoForm
 from django.contrib.auth.decorators import login_required
 
 

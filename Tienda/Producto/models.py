@@ -1,6 +1,5 @@
 from django.db import models
-from apps.Administrador.models import User
-from apps.Administrador.models import Perfil
+from Administrador.models import User, Perfil
 
 
 class MetodoDePago(models.Model):

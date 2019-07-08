@@ -4,8 +4,8 @@ from .forms import (AdministradorForm,
                     CategoriaForm,
                     CategoriaPadreForm,
                     MetodoDePagoForm)
-from apps.Administrador.models import Perfil
-from apps.Producto.models import (Producto,
+from Administrador.models import Perfil
+from Producto.models import (Producto,
                                   Categoria,
                                   CategoriaPadre,
                                   MetodoDePago)
