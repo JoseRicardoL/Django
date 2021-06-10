@@ -1,4 +1,4 @@
-Django==1.11.22
+Django==2.2.24
 Pillow==6.1.0
 pytz==2019.1
 
